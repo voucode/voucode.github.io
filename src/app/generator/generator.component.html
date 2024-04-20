@@ -64,17 +64,6 @@
                         <strong>Tick {{index + 1 | number: '2.0-0'}}: </strong>
                         <mat-divider></mat-divider>
                         <mat-form-field class="w-full lg:w-1/2">
-                            <mat-label>Mã tick {{index + 1 | number: '2.0-0'}}</mat-label>
-                            <input type="text" matInput [(ngModel)]="item.tickId" (ngModelChange)="uploadTick(item)" />
-                            <mat-hint [innerText]="'\<x\>:\<y\>'"></mat-hint>
-                        </mat-form-field>
-                        <mat-form-field class="w-full lg:w-1/2">
-                            <mat-label>Tọa độ tick {{index + 1 | number: '2.0-0'}}</mat-label>
-                            <input type="text" matInput [(ngModel)]="item.position"
-                                (ngModelChange)="uploadTick(item)" />
-                            <mat-hint [innerText]="'\<x\>:\<y\>'"></mat-hint>
-                        </mat-form-field>
-                        <mat-form-field class="w-full lg:w-1/2">
                             <mat-label>Kích thước tick {{index + 1 | number: '2.0-0'}}</mat-label>
                             <input type="number" matInput [(ngModel)]="item.size" (ngModelChange)="uploadTick(item)" />
                             <mat-hint [innerText]="'hình vuông'"></mat-hint>
@@ -90,6 +79,11 @@
 
             </div>
         </mat-expansion-panel>
+        @if (downloading) {
+        <div class="absolute top-0 right-0 bottom-0 left-0 flex justify-center items-center">
+            <mat-spinner></mat-spinner>
+        </div>
+        }
         <div #voucherContainer class="h-96 w-full border relative z-10 select-none" [id]="'voucherContainerId'" [style]="{
             height: voucher.height ? (voucher.height + 'px') : '',
             width: voucher.width ? (voucher.width + 'px') : '',
@@ -109,18 +103,28 @@
                         width: item.size + 'px',
                         transform: 'translate3d(' + item.x +'px, ' + item.y + 'px, 0px)'
                     }" class="absolute top-0 left-0 flex justify-center items-center cursor-move origin-center z-20"
-                [cdkDragDisabled]="!voucher?.background" cdkDragBoundary="#voucherContainerId" cdkDrag>
+                [cdkDragDisabled]="!voucher?.background" cdkDragBoundary="#voucherContainerId" cdkDrag
+                (cdkDragEnded)="uploadTick($event, item)">
                 <img [src]="voucher?.tickImage" alt="tickImage">
             </div>
             }
             @if (voucher?.background) {
             <img [src]="voucher?.backgroundImage" alt="background" (load)="updateImageSize($event)"
-                class="absolute top-0 right-0 bottom-0 left-0 -z-10">
+                class="absolute top-0 right-0 bottom-0 left-0">
             } @else {
-            <div class="absolute top-0 right-0 bottom-0 left-0 -z-10 flex justify-center items-center">
+            <div class="absolute top-0 right-0 bottom-0 left-0 flex justify-center items-center">
                 Nhập <span class="font-bold mx-1">Mã hình nền</span> trên Google Drive trước khi chỉnh sửa
             </div>
             }
+        </div>
+        <p class="my-4 text-xl text-center">Bảng xem trước</p>
+        <div>
+            <div #previewVoucher id="previewVoucher" class="w-fit"></div>
+        </div>
+        <div class="text-center">
+            <button mat-raised-button color="primary" (click)="saveAsImage(voucherContainer)" [disabled]="downloading">
+                <mat-icon>download</mat-icon> Tải ảnh chia sẻ
+            </button>
         </div>
     </mat-expansion-panel>
 </div>

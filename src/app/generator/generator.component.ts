@@ -8,17 +8,21 @@ import { MatInputModule } from '@angular/material/input';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { DecimalPipe } from '@angular/common';
 import { MatDividerModule } from '@angular/material/divider';
+import { NgxCaptureService } from 'ngx-capture';
+import { tap } from 'rxjs';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-generator',
   standalone: true,
-  imports: [MatFormFieldModule, MatDividerModule, MatExpansionModule, FormsModule, MatIconModule, MatInputModule, MatButtonModule, DragDropModule, DecimalPipe],
+  imports: [MatFormFieldModule, MatDividerModule, MatProgressSpinnerModule, MatExpansionModule, FormsModule, MatIconModule, MatInputModule, MatButtonModule, DragDropModule, DecimalPipe],
   templateUrl: './generator.component.html',
   styleUrl: './generator.component.scss'
 })
 export class GeneratorComponent implements OnInit {
 
   @ViewChild('voucherContainer') voucherContainer!: ElementRef;
+  @ViewChild('previewVoucher') previewVoucher!: ElementRef;
 
   voucher = <any>{
     qrPosition: '0:0',
@@ -26,7 +30,10 @@ export class GeneratorComponent implements OnInit {
     ticks: <any>[]
   }
 
-  constructor(private cd: ChangeDetectorRef) {
+  downloading: boolean = false
+
+  constructor(private cd: ChangeDetectorRef,
+    private captureService: NgxCaptureService,) {
   }
 
   ngOnInit(): void {
@@ -35,6 +42,7 @@ export class GeneratorComponent implements OnInit {
 
   onAddBackground() {
     this.voucher.backgroundImage = `https://lh3.google.com/u/0/d/${this.voucher.background}`
+    this.renderPreview()
   }
 
   updateImageSize(event: any) {
@@ -42,6 +50,7 @@ export class GeneratorComponent implements OnInit {
     this.voucher.width = `${event?.target.width}`
     this.voucher.size = `${event?.target.width}x${event?.target.height}`
     this.cd.detectChanges()
+    this.renderPreview()
   }
 
   updateQrPosition(event?: any) {
@@ -51,16 +60,25 @@ export class GeneratorComponent implements OnInit {
       this.voucher.qrX = this.voucher.qrPosition.split(':')[0]
       this.voucher.qrY = this.voucher.qrPosition.split(':')[1]
     }
+    this.renderPreview()
+  }
+
+  renderPreview() {
+    if (this.previewVoucher) {
+      this.previewVoucher.nativeElement.innerHTML = document.getElementById('voucherContainerId')?.outerHTML
+      this.cd.detectChanges()
+      console.log(this.voucher);      
+    }
   }
 
   updateTickImage() {
     this.voucher.tickImage = `https://lh3.google.com/u/0/d/${this.voucher.tickId}`
+    this.renderPreview()
   }
 
-  uploadTick(event: any) {
+  uploadTick(event: any, item?: any) {
     if (event?.target) {
       this.voucher.ticks.push({
-        tickId: this.voucher.tickId,
         tickImage: this.voucher.tickImage,
         size: event?.target.width,
         x: 0,
@@ -70,7 +88,6 @@ export class GeneratorComponent implements OnInit {
     }
     if (event == 'add') {
       this.voucher.ticks.push({
-        tickId: this.voucher.tickId,
         tickImage: this.voucher.tickImage,
         size: this.voucher.ticks[0].size,
         x: 0,
@@ -80,15 +97,58 @@ export class GeneratorComponent implements OnInit {
     }
     if (event.tickId) {
       event.tickId = event.tickId
-      event.tickImage = `https://lh3.google.com/u/0/d/${event.tickId}`
       event.size = event.size
       event.x = event.x
       event.y = event.y
       event.position = `${event.x}:${event.y}`
     }
-
-    console.log(this.voucher);
-
+    if (event?.event?.layerX || event?.event?.layerY) {                
+      item.position = `${event?.event?.layerX - event?.event?.target?.width / 2}:${event?.event?.layerY - event?.event?.target?.height / 2}`
+    }
     this.cd.detectChanges()
+    this.renderPreview()
+  }
+
+  private convertBase64ToBlob(Base64Image: string) {
+    // split into two parts
+    const parts = Base64Image.split(";base64,")
+    // hold the content type
+    const imageType = parts[0].split(":")[1]
+    // decode base64 string
+    const decodedData = window.atob(parts[1])
+    // create unit8array of size same as row data length
+    const uInt8Array = new Uint8Array(decodedData.length)
+    // insert all character code into uint8array
+    for (let i = 0; i < decodedData.length; ++i) {
+      uInt8Array[i] = decodedData.charCodeAt(i)
+    }
+    // return blob image after conversion
+    return new Blob([uInt8Array], { type: imageType })
+  }
+
+  saveAsImage(element: any) {
+    setTimeout(() => {
+      this.downloading = true
+      const saveItem = document.getElementById('previewVoucher')
+      this.captureService
+        //@ts-ignore
+        .getImage(saveItem, true)
+        .pipe(
+          tap((img: string) => {
+            // converts base 64 encoded image to blobData
+            let blobData = this.convertBase64ToBlob(img)
+            // saves as image
+            const blob = new Blob([blobData], { type: "image/png" })
+            const url = window.URL.createObjectURL(blob)
+            const link = document.createElement("a")
+            link.href = url
+            // name of the file
+            link.download = `${this.voucher.id?.toString()?.replace('.', '_')}`
+            link.click()
+            this.downloading = false
+          })
+        )
+        .subscribe();
+    }, 0)
   }
 }
