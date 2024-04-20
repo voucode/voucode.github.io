@@ -11,11 +11,12 @@ import { MatDividerModule } from '@angular/material/divider';
 import { NgxCaptureService } from 'ngx-capture';
 import { tap } from 'rxjs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { QRCodeModule } from 'angularx-qrcode';
 
 @Component({
   selector: 'app-generator',
   standalone: true,
-  imports: [MatFormFieldModule, MatDividerModule, MatProgressSpinnerModule, MatExpansionModule, FormsModule, MatIconModule, MatInputModule, MatButtonModule, DragDropModule, DecimalPipe],
+  imports: [MatFormFieldModule, MatDividerModule, MatProgressSpinnerModule, MatExpansionModule, FormsModule, MatIconModule, MatInputModule, MatButtonModule, DragDropModule, DecimalPipe, QRCodeModule],
   templateUrl: './generator.component.html',
   styleUrl: './generator.component.scss'
 })
@@ -31,6 +32,9 @@ export class GeneratorComponent implements OnInit {
   }
 
   downloading: boolean = false
+  googleFormsVoucherId: any = ''
+  googleFormsPath: any = ''
+  googleFormsEntry = <any>[]
 
   constructor(private cd: ChangeDetectorRef,
     private captureService: NgxCaptureService,) {
@@ -38,6 +42,10 @@ export class GeneratorComponent implements OnInit {
 
   ngOnInit(): void {
     this.updateQrPosition()
+  }
+
+  updateQr() {
+    this.voucher.qrIconSize = ((this.voucher.qrSize / 100) * 0.01)
   }
 
   onAddBackground() {
@@ -51,7 +59,6 @@ export class GeneratorComponent implements OnInit {
         this.voucher.backgroundImage = `https://lh3.googleusercontent.com/fife/${this.voucher.correctBackground}`
       }
     }
-    this.renderPreview()
   }
 
   updateImageSize(event: any) {
@@ -59,7 +66,6 @@ export class GeneratorComponent implements OnInit {
     this.voucher.width = `${event?.target.width}`
     this.voucher.size = `${event?.target.width}x${event?.target.height}`
     this.cd.detectChanges()
-    this.renderPreview()
   }
 
   updateQrPosition(event?: any) {
@@ -68,15 +74,6 @@ export class GeneratorComponent implements OnInit {
     } else {
       this.voucher.qrX = this.voucher.qrPosition.split(':')[0]
       this.voucher.qrY = this.voucher.qrPosition.split(':')[1]
-    }
-    this.renderPreview()
-  }
-
-  renderPreview() {
-    if (this.previewVoucher) {
-      this.previewVoucher.nativeElement.innerHTML = document.getElementById('voucherContainerId')?.outerHTML
-      this.cd.detectChanges()
-      console.log(this.voucher);
     }
   }
 
@@ -91,11 +88,11 @@ export class GeneratorComponent implements OnInit {
         this.voucher.tickImage = `https://lh3.googleusercontent.com/fife/${this.voucher.correctTick}`
       }
     }
-    this.renderPreview()
   }
 
   uploadTick(event: any, item?: any) {
     if (event?.target) {
+      this.voucher.ticks = []
       this.voucher.ticks.push({
         tickImage: this.voucher.tickImage,
         size: event?.target.width,
@@ -124,7 +121,6 @@ export class GeneratorComponent implements OnInit {
       item.position = `${event?.event?.layerX - event?.event?.target?.width / 2}:${event?.event?.layerY - event?.event?.target?.height / 2}`
     }
     this.cd.detectChanges()
-    this.renderPreview()
   }
 
   private convertBase64ToBlob(Base64Image: string) {
@@ -147,7 +143,7 @@ export class GeneratorComponent implements OnInit {
   saveAsImage(element: any) {
     setTimeout(() => {
       this.downloading = true
-      const saveItem = document.getElementById('previewVoucher')
+      const saveItem = document.getElementById(element?.id)
       this.captureService
         //@ts-ignore
         .getImage(saveItem, true)
@@ -168,5 +164,39 @@ export class GeneratorComponent implements OnInit {
         )
         .subscribe();
     }, 0)
+  }
+
+  saveData() {
+    console.log(this.voucher);
+
+    let googleFormsPath = `https://docs.google.com/forms/d/e/${this.googleFormsVoucherId}/viewform`;
+
+    Object.keys(this.voucher)?.forEach((k: any) => {
+      if (k == 'ticks' && this.voucher[k]?.length > 0) {
+        console.log(this.voucher[k]?.map((tick: any) => {
+          return {
+            size: tick.size,
+            x: tick.x,
+            y: tick.y,
+          }
+        }));
+        if (this.googleFormsEntry[k]) {
+          googleFormsPath += `?${this.googleFormsEntry[k]}=${encodeURIComponent(this.voucher[k]?.map((tick: any) => {
+            return {
+              size: tick.size,
+              x: tick.x,
+              y: tick.y,
+            }
+          }))}`
+        }
+        
+      } else {
+        if (this.googleFormsEntry[k] && this.voucher[k]) {
+          googleFormsPath += `?${this.googleFormsEntry[k]}=${encodeURIComponent(this.voucher[k])}`
+        }
+      }
+    })
+    console.log(googleFormsPath);
+
   }
 }

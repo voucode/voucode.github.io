@@ -43,7 +43,7 @@
             </mat-form-field>
             <mat-form-field class="w-full">
                 <mat-label>Kích thước mã QR trong khuyến mãi</mat-label>
-                <input type="number" matInput required [(ngModel)]="voucher.qrSize" />
+                <input type="number" matInput required [(ngModel)]="voucher.qrSize" (ngModelChange)="updateQr()" />
                 <mat-hint [innerText]="'hình vuông'"></mat-hint>
             </mat-form-field>
             <mat-form-field class="w-full">
@@ -114,7 +114,14 @@
             }" class="absolute top-0 left-0 border flex justify-center items-center cursor-move origin-center bg-white z-10"
                 [cdkDragDisabled]="!voucher?.backgroundImage" cdkDragBoundary="#voucherContainerId" cdkDrag
                 (cdkDragEnded)="updateQrPosition($event)">
+                @if(voucher.id) {
+                <qrcode #sync [qrdata]="voucher.id" [width]="voucher.qrSize" [imageHeight]="voucher.qrIconSize"
+                    [imageWidth]="voucher.qrIconSize" [cssClass]="'flex justify-center'" [errorCorrectionLevel]="'M'"
+                    [colorDark]="'#000000ff'" [colorLight]="'#ffffffff'" [elementType]="'canvas'" [margin]="4"
+                    [scale]="128"></qrcode>
+                } @else {
                 QR
+                }
             </div>
             @for (item of voucher?.ticks; track item) {
             <div [style]="{
@@ -137,13 +144,15 @@
             </div>
             }
         </div>
-        <p class="my-4 text-xl text-center">Bảng xem trước</p>
-        <div>
-            <div #previewVoucher id="previewVoucher" class="w-fit"></div>
+        <div class="text-center mb-6">
+            <button mat-stroked-button color="primary" (click)="saveAsImage(voucherContainer)" [disabled]="downloading">
+                <mat-icon>download</mat-icon> Tải ảnh chia sẻ
+            </button>
         </div>
         <div class="text-center">
-            <button mat-raised-button color="primary" (click)="saveAsImage(voucherContainer)" [disabled]="downloading">
-                <mat-icon>download</mat-icon> Tải ảnh chia sẻ
+            <button mat-raised-button color="primary" (click)="saveData()" [disabled]="downloading"
+                class="w-full">
+                <mat-icon>save</mat-icon> Lưu Dữ Liệu Mẫu Khuyến Mãi
             </button>
         </div>
     </mat-expansion-panel>
