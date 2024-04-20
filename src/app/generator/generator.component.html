@@ -1,0 +1,126 @@
+<div class="p-3">
+    <h1 class="text-4xl mb-4">Tạo khuyến mãi</h1>
+    <mat-expansion-panel [expanded]="true">
+        <mat-expansion-panel-header>
+            <mat-panel-title>Thông tin chung</mat-panel-title>
+            <mat-panel-description>Thông tin chung của khuyến mãi</mat-panel-description>
+        </mat-expansion-panel-header>
+        <mat-form-field class="w-full">
+            <mat-label>Mã khuyến mãi</mat-label>
+            <input type="text" matInput required [(ngModel)]="voucher.id" />
+        </mat-form-field>
+        <mat-form-field class="w-full">
+            <mat-label>Tên gọi khuyến mãi</mat-label>
+            <input type="text" matInput required [(ngModel)]="voucher.name" />
+        </mat-form-field>
+    </mat-expansion-panel>
+    <mat-expansion-panel [expanded]="true">
+        <mat-expansion-panel-header>
+            <mat-panel-title>Thiết kế</mat-panel-title>
+            <mat-panel-description>Thiết kế của khuyến mãi</mat-panel-description>
+        </mat-expansion-panel-header>
+        <div>
+            <mat-form-field class="w-full">
+                <mat-label>Mã hình nền</mat-label>
+                <input type="text" matInput required [(ngModel)]="voucher.background"
+                    (ngModelChange)="onAddBackground()" />
+                <mat-hint>Id của ảnh trên Google Drive</mat-hint>
+            </mat-form-field>
+            <mat-form-field class="w-full">
+                <mat-label>Kích thước hình ảnh khuyến mãi</mat-label>
+                <input type="text" disabled matInput required [(ngModel)]="voucher.size" />
+                <mat-hint [innerText]="'\<ngang\>x\<dọc\>'"></mat-hint>
+            </mat-form-field>
+            <mat-form-field class="w-full">
+                <mat-label>Kích thước mã QR trong khuyến mãi</mat-label>
+                <input type="number" matInput required [(ngModel)]="voucher.qrSize" />
+                <mat-hint [innerText]="'hình vuông'"></mat-hint>
+            </mat-form-field>
+            <mat-form-field class="w-full">
+                <mat-label>Tọa độ mã QR trong khuyến mãi</mat-label>
+                <input type="text" matInput required [(ngModel)]="voucher.qrPosition"
+                    (ngModelChange)="updateQrPosition()" />
+                <mat-hint [innerText]="'\<x\>:\<y\>'"></mat-hint>
+            </mat-form-field>
+        </div>
+
+        <mat-expansion-panel>
+            <mat-expansion-panel-header>
+                <mat-panel-title>Khuyến mãi tích điểm</mat-panel-title>
+                <mat-panel-description>Thiết kế của khuyến mãi tích điểm</mat-panel-description>
+            </mat-expansion-panel-header>
+            <div>
+                <mat-form-field class="w-full">
+                    <mat-label>Mã tick</mat-label>
+                    <input type="text" matInput [(ngModel)]="voucher.tickId" (ngModelChange)="updateTickImage()" />
+                    <mat-hint [innerText]="'\<x\>:\<y\>'"></mat-hint>
+                </mat-form-field>
+                @if (voucher?.tickImage) {
+                <img [src]="voucher?.tickImage" class="h-8" alt="tickImage" (load)="uploadTick($event)">
+                }
+                <div class="w-full flex flex-wrap">
+                    @for (item of voucher?.ticks; track item; let index = $index) {
+                    <div class="w-full lg:w-1/3">
+                        <strong>Tick {{index + 1 | number: '2.0-0'}}: </strong>
+                        <mat-divider></mat-divider>
+                        <mat-form-field class="w-full lg:w-1/2">
+                            <mat-label>Mã tick {{index + 1 | number: '2.0-0'}}</mat-label>
+                            <input type="text" matInput [(ngModel)]="item.tickId" (ngModelChange)="uploadTick(item)" />
+                            <mat-hint [innerText]="'\<x\>:\<y\>'"></mat-hint>
+                        </mat-form-field>
+                        <mat-form-field class="w-full lg:w-1/2">
+                            <mat-label>Tọa độ tick {{index + 1 | number: '2.0-0'}}</mat-label>
+                            <input type="text" matInput [(ngModel)]="item.position"
+                                (ngModelChange)="uploadTick(item)" />
+                            <mat-hint [innerText]="'\<x\>:\<y\>'"></mat-hint>
+                        </mat-form-field>
+                        <mat-form-field class="w-full lg:w-1/2">
+                            <mat-label>Kích thước tick {{index + 1 | number: '2.0-0'}}</mat-label>
+                            <input type="number" matInput [(ngModel)]="item.size" (ngModelChange)="uploadTick(item)" />
+                            <mat-hint [innerText]="'hình vuông'"></mat-hint>
+                        </mat-form-field>
+                    </div>
+                    }
+                    @if (voucher?.tickImage) {
+                    <button mat-stroked-button [color]="'primary'" class="w-full lg:w-1/3"
+                        (click)="uploadTick('add')">Thêm
+                        tick</button>
+                    }
+                </div>
+
+            </div>
+        </mat-expansion-panel>
+        <div #voucherContainer class="h-96 w-full border relative z-10 select-none" [id]="'voucherContainerId'" [style]="{
+            height: voucher.height ? (voucher.height + 'px') : '',
+            width: voucher.width ? (voucher.width + 'px') : '',
+            }">
+            <div [style]="{
+                height: voucher.qrSize + 'px',
+                width: voucher.qrSize + 'px',
+                transform: 'translate3d(' + voucher.qrX +'px, ' + voucher.qrY + 'px, 0px)'
+            }" class="absolute top-0 left-0 border flex justify-center items-center cursor-move origin-center bg-white z-10"
+                [cdkDragDisabled]="!voucher?.background" cdkDragBoundary="#voucherContainerId" cdkDrag
+                (cdkDragEnded)="updateQrPosition($event)">
+                QR
+            </div>
+            @for (item of voucher?.ticks; track item) {
+            <div [style]="{
+                        height: item.size + 'px',
+                        width: item.size + 'px',
+                        transform: 'translate3d(' + item.x +'px, ' + item.y + 'px, 0px)'
+                    }" class="absolute top-0 left-0 flex justify-center items-center cursor-move origin-center z-20"
+                [cdkDragDisabled]="!voucher?.background" cdkDragBoundary="#voucherContainerId" cdkDrag>
+                <img [src]="voucher?.tickImage" alt="tickImage">
+            </div>
+            }
+            @if (voucher?.background) {
+            <img [src]="voucher?.backgroundImage" alt="background" (load)="updateImageSize($event)"
+                class="absolute top-0 right-0 bottom-0 left-0 -z-10">
+            } @else {
+            <div class="absolute top-0 right-0 bottom-0 left-0 -z-10 flex justify-center items-center">
+                Nhập <span class="font-bold mx-1">Mã hình nền</span> trên Google Drive trước khi chỉnh sửa
+            </div>
+            }
+        </div>
+    </mat-expansion-panel>
+</div>

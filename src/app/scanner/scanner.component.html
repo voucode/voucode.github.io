@@ -1,0 +1,10 @@
+<div class="h-full relative">
+    @if (isShowScanner) {
+    <div class="w-full lg:w-1/2">
+        <cp-qr-scanner (qrData)="scanComplete($event)"></cp-qr-scanner>
+    </div>
+    }
+    <div class="w-full lg:w-1/2">
+        
+    </div>
+</div>
