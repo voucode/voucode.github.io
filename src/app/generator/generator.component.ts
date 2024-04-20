@@ -41,7 +41,16 @@ export class GeneratorComponent implements OnInit {
   }
 
   onAddBackground() {
-    this.voucher.backgroundImage = `https://lh3.google.com/u/0/d/${this.voucher.background}`
+    if (this.voucher.background) {
+      this.voucher.sharedBackground = `https://lh3.google.com/u/0/d/${this.voucher.background}`
+    }
+    if (this.voucher.correctBackground) {
+      if (this.voucher.correctBackground?.includes('http')) {
+        this.voucher.backgroundImage = this.voucher.correctBackground
+      } else {
+        this.voucher.backgroundImage = `https://lh3.googleusercontent.com/fife/${this.voucher.correctBackground}`
+      }
+    }
     this.renderPreview()
   }
 
@@ -67,12 +76,21 @@ export class GeneratorComponent implements OnInit {
     if (this.previewVoucher) {
       this.previewVoucher.nativeElement.innerHTML = document.getElementById('voucherContainerId')?.outerHTML
       this.cd.detectChanges()
-      console.log(this.voucher);      
+      console.log(this.voucher);
     }
   }
 
   updateTickImage() {
-    this.voucher.tickImage = `https://lh3.google.com/u/0/d/${this.voucher.tickId}`
+    if (this.voucher.tickId) {
+      this.voucher.shareTick = `https://lh3.google.com/u/0/d/${this.voucher.tickId}`
+    }
+    if (this.voucher.correctTick) {
+      if (this.voucher.correctTick?.includes('http')) {
+        this.voucher.tickImage = this.voucher.correctTick
+      } else {
+        this.voucher.tickImage = `https://lh3.googleusercontent.com/fife/${this.voucher.correctTick}`
+      }
+    }
     this.renderPreview()
   }
 
@@ -102,7 +120,7 @@ export class GeneratorComponent implements OnInit {
       event.y = event.y
       event.position = `${event.x}:${event.y}`
     }
-    if (event?.event?.layerX || event?.event?.layerY) {                
+    if (event?.event?.layerX || event?.event?.layerY) {
       item.position = `${event?.event?.layerX - event?.event?.target?.width / 2}:${event?.event?.layerY - event?.event?.target?.height / 2}`
     }
     this.cd.detectChanges()
@@ -142,7 +160,7 @@ export class GeneratorComponent implements OnInit {
             const url = window.URL.createObjectURL(blob)
             const link = document.createElement("a")
             link.href = url
-            // name of the file
+            // name of the file            
             link.download = `${this.voucher.id?.toString()?.replace('.', '_')}`
             link.click()
             this.downloading = false

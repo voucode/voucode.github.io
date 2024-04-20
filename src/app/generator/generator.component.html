@@ -26,6 +26,16 @@
                     (ngModelChange)="onAddBackground()" />
                 <mat-hint>Id của ảnh trên Google Drive</mat-hint>
             </mat-form-field>
+            @if (voucher?.sharedBackground) {
+            Hãy truy cập ngay: <a [href]="voucher?.sharedBackground" [target]="'_blank'"
+                class="underline text-[red]">{{voucher?.sharedBackground}}</a> để lấy <strong>Mã
+                hình nền </strong>chính xác.
+            }
+            <mat-form-field class="w-full">
+                <mat-label>Mã/liên kết hình nền <strong class="text-[red]">chính xác</strong></mat-label>
+                <input type="text" matInput required [(ngModel)]="voucher.correctBackground"
+                    (ngModelChange)="onAddBackground()" />
+            </mat-form-field>
             <mat-form-field class="w-full">
                 <mat-label>Kích thước hình ảnh khuyến mãi</mat-label>
                 <input type="text" disabled matInput required [(ngModel)]="voucher.size" />
@@ -53,7 +63,16 @@
                 <mat-form-field class="w-full">
                     <mat-label>Mã tick</mat-label>
                     <input type="text" matInput [(ngModel)]="voucher.tickId" (ngModelChange)="updateTickImage()" />
-                    <mat-hint [innerText]="'\<x\>:\<y\>'"></mat-hint>
+                </mat-form-field>
+
+                @if (voucher?.shareTick) {
+                Hãy truy cập ngay: <a [href]="voucher?.shareTick" [target]="'_blank'"
+                    class="underline text-[red]">{{voucher?.shareTick}}</a> để lấy <strong>Mã
+                    tick </strong>chính xác.
+                }
+                <mat-form-field class="w-full">
+                    <mat-label>Mã/liên kết tick <strong class="text-[red]">chính xác</strong></mat-label>
+                    <input type="text" matInput [(ngModel)]="voucher.correctTick" (ngModelChange)="updateTickImage()" />
                 </mat-form-field>
                 @if (voucher?.tickImage) {
                 <img [src]="voucher?.tickImage" class="h-8" alt="tickImage" (load)="uploadTick($event)">
@@ -93,7 +112,7 @@
                 width: voucher.qrSize + 'px',
                 transform: 'translate3d(' + voucher.qrX +'px, ' + voucher.qrY + 'px, 0px)'
             }" class="absolute top-0 left-0 border flex justify-center items-center cursor-move origin-center bg-white z-10"
-                [cdkDragDisabled]="!voucher?.background" cdkDragBoundary="#voucherContainerId" cdkDrag
+                [cdkDragDisabled]="!voucher?.backgroundImage" cdkDragBoundary="#voucherContainerId" cdkDrag
                 (cdkDragEnded)="updateQrPosition($event)">
                 QR
             </div>
@@ -103,17 +122,18 @@
                         width: item.size + 'px',
                         transform: 'translate3d(' + item.x +'px, ' + item.y + 'px, 0px)'
                     }" class="absolute top-0 left-0 flex justify-center items-center cursor-move origin-center z-20"
-                [cdkDragDisabled]="!voucher?.background" cdkDragBoundary="#voucherContainerId" cdkDrag
+                [cdkDragDisabled]="!voucher?.backgroundImage" cdkDragBoundary="#voucherContainerId" cdkDrag
                 (cdkDragEnded)="uploadTick($event, item)">
                 <img [src]="voucher?.tickImage" alt="tickImage">
             </div>
             }
-            @if (voucher?.background) {
+            @if (voucher?.backgroundImage) {
             <img [src]="voucher?.backgroundImage" alt="background" (load)="updateImageSize($event)"
                 class="absolute top-0 right-0 bottom-0 left-0">
             } @else {
-            <div class="absolute top-0 right-0 bottom-0 left-0 flex justify-center items-center">
-                Nhập <span class="font-bold mx-1">Mã hình nền</span> trên Google Drive trước khi chỉnh sửa
+            <div class="absolute top-0 right-0 bottom-0 left-0 flex justify-center items-center text-center text-lg">
+                Hãy thực hiện các bước <strong class="text-[red] mx-1"> chính xác</strong> ở phía trên thì bạn mới có
+                thể tiến hành chỉnh sửa khuyến mãi
             </div>
             }
         </div>
