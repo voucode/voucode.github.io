@@ -106,7 +106,7 @@ export class AppComponent implements AfterViewChecked {
                 })
               })
               this.brandSetting = this.brandService.brandSetting
-              console.log(this.brandSetting);
+              // console.log(this.brandSetting);
               
               loggedIn.trigger = this.loggedInBrand?.trigger
               localStorage.setItem('loggedIn', JSON.stringify(loggedIn))

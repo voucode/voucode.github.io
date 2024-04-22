@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { AfterViewChecked, ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatButtonModule } from '@angular/material/button';
@@ -12,15 +12,17 @@ import { NgxCaptureService } from 'ngx-capture';
 import { tap } from 'rxjs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { QRCodeModule } from 'angularx-qrcode';
+import { BrandService } from '../shared/services/brand/brand.service';
+import { SharedModule } from "../shared/shared.module";
 
 @Component({
   selector: 'app-generator',
   standalone: true,
-  imports: [MatFormFieldModule, MatDividerModule, MatProgressSpinnerModule, MatExpansionModule, FormsModule, MatIconModule, MatInputModule, MatButtonModule, DragDropModule, DecimalPipe, QRCodeModule],
   templateUrl: './generator.component.html',
-  styleUrl: './generator.component.scss'
+  styleUrl: './generator.component.scss',
+  imports: [MatFormFieldModule, MatDividerModule, MatProgressSpinnerModule, MatExpansionModule, FormsModule, MatIconModule, MatInputModule, MatButtonModule, DragDropModule, DecimalPipe, QRCodeModule, SharedModule]
 })
-export class GeneratorComponent implements OnInit {
+export class GeneratorComponent implements OnInit, AfterViewChecked {
 
   @ViewChild('voucherContainer') voucherContainer!: ElementRef;
   @ViewChild('previewVoucher') previewVoucher!: ElementRef;
@@ -30,18 +32,35 @@ export class GeneratorComponent implements OnInit {
     qrSize: '120',
     ticks: <any>[]
   }
+  loggedIn: boolean = false;
 
   downloading: boolean = false
-  googleFormsVoucherId: any = ''
   googleFormsPath: any = ''
   googleFormsEntry = <any>[]
+  generatorBrandSetting = <any>{}
 
-  constructor(private cd: ChangeDetectorRef,
-    private captureService: NgxCaptureService,) {
+  constructor(
+    private cd: ChangeDetectorRef,
+    private captureService: NgxCaptureService,
+    private brandService: BrandService
+  ) {
+    this.loggedIn = !!localStorage.getItem('loggedIn')
   }
 
   ngOnInit(): void {
     this.updateQrPosition()
+  }
+
+  ngAfterViewChecked(): void {
+    if (!this.generatorBrandSetting?.voucherForms) {
+      this.getGeneratorBrandSetting()
+    }
+  }
+
+  getGeneratorBrandSetting() {
+    this.generatorBrandSetting = this.brandService.brandSetting.global
+    this.cd.detectChanges()
+
   }
 
   updateQr() {
@@ -50,6 +69,9 @@ export class GeneratorComponent implements OnInit {
 
   onAddBackground() {
     if (this.voucher.background) {
+      if (this.voucher.background?.includes('http')) {
+        this.voucher.background = this.voucher.background?.split('d/')[1]?.split('/')[0]
+      }
       this.voucher.sharedBackground = `https://lh3.google.com/u/0/d/${this.voucher.background}`
     }
     if (this.voucher.correctBackground) {
@@ -79,6 +101,9 @@ export class GeneratorComponent implements OnInit {
 
   updateTickImage() {
     if (this.voucher.tickId) {
+      if (this.voucher.tickId?.includes('http')) {
+        this.voucher.tickId = this.voucher.tickId?.split('d/')[1]?.split('/')[0]
+      }
       this.voucher.shareTick = `https://lh3.google.com/u/0/d/${this.voucher.tickId}`
     }
     if (this.voucher.correctTick) {
@@ -104,7 +129,7 @@ export class GeneratorComponent implements OnInit {
     if (event == 'add') {
       this.voucher.ticks.push({
         tickImage: this.voucher.tickImage,
-        size: this.voucher.ticks[0].size,
+        size: this.voucher.ticks[0]?.size,
         x: 0,
         y: 0,
         position: '0:0'
@@ -142,6 +167,9 @@ export class GeneratorComponent implements OnInit {
 
   saveAsImage(element: any) {
     setTimeout(() => {
+      this.voucher.id = `${this.generatorBrandSetting?.id}-${this.voucher.id}`
+    })
+    setTimeout(() => {
       this.downloading = true
       const saveItem = document.getElementById(element?.id)
       this.captureService
@@ -167,36 +195,49 @@ export class GeneratorComponent implements OnInit {
   }
 
   saveData() {
-    console.log(this.voucher);
-
-    let googleFormsPath = `https://docs.google.com/forms/d/e/${this.googleFormsVoucherId}/viewform`;
-
-    Object.keys(this.voucher)?.forEach((k: any) => {
-      if (k == 'ticks' && this.voucher[k]?.length > 0) {
-        console.log(this.voucher[k]?.map((tick: any) => {
-          return {
-            size: tick.size,
-            x: tick.x,
-            y: tick.y,
-          }
-        }));
-        if (this.googleFormsEntry[k]) {
-          googleFormsPath += `?${this.googleFormsEntry[k]}=${encodeURIComponent(this.voucher[k]?.map((tick: any) => {
-            return {
-              size: tick.size,
-              x: tick.x,
-              y: tick.y,
-            }
-          }))}`
-        }
-        
-      } else {
-        if (this.googleFormsEntry[k] && this.voucher[k]) {
-          googleFormsPath += `?${this.googleFormsEntry[k]}=${encodeURIComponent(this.voucher[k])}`
-        }
+    if (this.generatorBrandSetting?.voucherForms) {
+      if (this.generatorBrandSetting?.voucherForms?.includes('http')) {
+        this.generatorBrandSetting.voucherForms = this.generatorBrandSetting?.voucherForms?.split('e/')[1]?.split('/')[0]
       }
-    })
-    console.log(googleFormsPath);
+      this.googleFormsPath = `https://docs.google.com/forms/d/e/${this.generatorBrandSetting?.voucherForms}/viewform`
 
+      Object.keys(this.brandService.brandSetting?.voucherDatabase)
+        ?.filter((item: any) => item !== 'googleFormsId')
+        ?.forEach((k: any, index) => {
+          if (k == 'id') {
+            if (this.voucher[k]) {
+              this.googleFormsPath += `${index === 0 ? '?' : '&'}${this.brandService.brandSetting?.voucherDatabase[k]}=${this.generatorBrandSetting?.id}-${encodeURIComponent(this.voucher[k])}`
+            }
+          } else {
+            if (k == 'ticks') {
+              if (this.voucher[k]) {
+                this.googleFormsPath += `${index === 0 ? '?' : '&'}${this.brandService.brandSetting?.voucherDatabase[k]}=${encodeURIComponent(JSON.stringify(this.voucher[k]?.map((tick: any) => {
+                  return {
+                    size: tick.size,
+                    x: tick.x,
+                    y: tick.y,
+                  }
+                })))}`
+              }
+            } else {
+              if (k == 'background') {
+                if (this.voucher.backgroundImage) {
+                  this.googleFormsPath += `${index === 0 ? '?' : '&'}${this.brandService.brandSetting?.voucherDatabase[k]}=${encodeURIComponent(this.voucher.backgroundImage)}`
+                }
+              } else {
+                if (k == 'tickId') {
+                  if (this.voucher.tickImage) {
+                    this.googleFormsPath += `${index === 0 ? '?' : '&'}${this.brandService.brandSetting?.voucherDatabase[k]}=${encodeURIComponent(this.voucher.tickImage)}`
+                  }
+                } else {
+                  if (this.voucher[k]) {
+                    this.googleFormsPath += `${index === 0 ? '?' : '&'}${this.brandService.brandSetting?.voucherDatabase[k]}=${encodeURIComponent(this.voucher[k])}`
+                  }
+                }
+              }
+            }
+          }
+        })
+    }
   }
 }

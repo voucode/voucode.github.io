@@ -43,7 +43,6 @@ export class CustomerComponent implements AfterViewChecked {
   getBrandSetting() {
     this.customerBrandSetting = this.brandService.brandSetting?.global
     this.cd.detectChanges()
-    console.log(this.customerBrandSetting);
   }
 
   onConfirmCreateCustomer() {
@@ -64,8 +63,6 @@ export class CustomerComponent implements AfterViewChecked {
             }
           }
         })
-      console.log(this.googleFormsPath);
-
     }
   }
 

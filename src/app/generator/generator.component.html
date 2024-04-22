@@ -1,5 +1,7 @@
 <div class="p-3">
+    @if (loggedIn) {
     <h1 class="text-4xl mb-4">Tạo khuyến mãi</h1>
+    @if (generatorBrandSetting?.voucherForms) {
     <mat-expansion-panel [expanded]="true">
         <mat-expansion-panel-header>
             <mat-panel-title>Thông tin chung</mat-panel-title>
@@ -8,6 +10,7 @@
         <mat-form-field class="w-full">
             <mat-label>Mã khuyến mãi</mat-label>
             <input type="text" matInput required [(ngModel)]="voucher.id" />
+            <span matTextPrefix>{{generatorBrandSetting?.id}}-</span>
         </mat-form-field>
         <mat-form-field class="w-full">
             <mat-label>Tên gọi khuyến mãi</mat-label>
@@ -104,14 +107,15 @@
         </div>
         }
         <div #voucherContainer class="h-96 w-full border relative z-10 select-none" [id]="'voucherContainerId'" [style]="{
-            height: voucher.height ? (voucher.height + 'px') : '',
-            width: voucher.width ? (voucher.width + 'px') : '',
-            }">
+                    height: voucher.height ? (voucher.height + 'px') : '',
+                    width: voucher.width ? (voucher.width + 'px') : '',
+                    }">
             <div [style]="{
-                height: voucher.qrSize + 'px',
-                width: voucher.qrSize + 'px',
-                transform: 'translate3d(' + voucher.qrX +'px, ' + voucher.qrY + 'px, 0px)'
-            }" class="absolute top-0 left-0 border flex justify-center items-center cursor-move origin-center bg-white z-10"
+                        height: voucher.qrSize + 'px',
+                        width: voucher.qrSize + 'px',
+                        transform: 'translate3d(' + voucher.qrX +'px, ' + voucher.qrY + 'px, 0px)'
+                    }"
+                class="absolute top-0 left-0 border flex justify-center items-center cursor-move origin-center bg-white z-10"
                 [cdkDragDisabled]="!voucher?.backgroundImage" cdkDragBoundary="#voucherContainerId" cdkDrag
                 (cdkDragEnded)="updateQrPosition($event)">
                 @if(voucher.id) {
@@ -125,10 +129,11 @@
             </div>
             @for (item of voucher?.ticks; track item) {
             <div [style]="{
-                        height: item.size + 'px',
-                        width: item.size + 'px',
-                        transform: 'translate3d(' + item.x +'px, ' + item.y + 'px, 0px)'
-                    }" class="absolute top-0 left-0 flex justify-center items-center cursor-move origin-center z-20"
+                                height: item.size + 'px',
+                                width: item.size + 'px',
+                                transform: 'translate3d(' + item.x +'px, ' + item.y + 'px, 0px)'
+                            }"
+                class="absolute top-0 left-0 flex justify-center items-center cursor-move origin-center z-20"
                 [cdkDragDisabled]="!voucher?.backgroundImage" cdkDragBoundary="#voucherContainerId" cdkDrag
                 (cdkDragEnded)="uploadTick($event, item)">
                 <img [src]="voucher?.tickImage" alt="tickImage">
@@ -150,10 +155,29 @@
             </button>
         </div>
         <div class="text-center">
-            <button mat-raised-button color="primary" (click)="saveData()" [disabled]="downloading"
-                class="w-full">
+            <button mat-raised-button color="primary" (click)="saveData()" [disabled]="downloading" class="w-full">
                 <mat-icon>save</mat-icon> Lưu Dữ Liệu Mẫu Khuyến Mãi
             </button>
         </div>
+        @if (googleFormsPath) {
+        <button class="w-full" mat-stroked-button [color]="'primary'" (click)="googleFormsPath = ''">Đóng biểu
+            mẫu</button>
+        <div><strong class="text-[red]">LƯU Ý:</strong> Hãy Ấn nút "Gửi" hoặc "Submit" trong Biễu Mẫu bên dưới 👇👇👇
+            thì bạn mới hoàn thành việc đăng ký nhé!</div>
+        <div><strong class="text-[red]">LƯU Ý:</strong> Mỗi khi hoàn thành việc tạo bạn nhớ ấn nút "Đóng biểu mẫu để làm
+            mới nhé!"</div>
+        <iframe [src]="googleFormsPath | safe" class="w-full min-h-96" frameborder="0"></iframe>
+        <div><strong class="text-[red]">LƯU Ý:</strong> Hãy Ấn nút "Gửi" hoặc "Submit" trong Biễu Mẫu bên trên 👆👆👆
+            thì bạn mới hoàn thành việc đăng ký nhé!</div>
+        <div><strong class="text-[red]">LƯU Ý:</strong> Mỗi khi hoàn thành việc tạo bạn nhớ ấn nút "Đóng biểu mẫu để làm
+            mới nhé!"</div>
+        }
     </mat-expansion-panel>
+    } @else {
+    <div class="h-full flex justify-center items-center flex-col">
+        <div>Đang tìm kiếm biểu mẫu tạo khuyến mãi của bạn</div>
+        <mat-spinner></mat-spinner>
+    </div>
+    }
+    }
 </div>
