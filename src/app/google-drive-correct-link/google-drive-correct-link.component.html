@@ -1,0 +1,14 @@
+<div class="p-3">
+    <h1 class="text-2xl">Xác định liên kết chính xác của ảnh từ Google Drive</h1>
+    <mat-form-field class="w-full">
+        <mat-label>Mã/Liên kết</mat-label>
+        <input type="text" matInput required [(ngModel)]="inputValue"
+            (ngModelChange)="getLink()" />
+        <mat-hint>Nhập liên kết hoặc mã của ảnh đã được chia sẻ trên Google Drive</mat-hint>
+    </mat-form-field>
+    @if (sharedLink) {
+    Hãy truy cập ngay: <a [href]="sharedLink" [target]="'_blank'"
+        class="underline text-[red]">{{sharedLink}}</a> để lấy <strong>Mã
+        hình nền </strong>chính xác. Liên kết cuối cùng bạn nhận được là liên kết chính xác của bạn.
+    }
+</div>

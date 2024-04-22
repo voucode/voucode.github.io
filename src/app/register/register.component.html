@@ -1,0 +1,79 @@
+<div class="min-h-full flex flex-col justify-center items-center">
+    <div class="w-full lg:w-1/2 bg-white p-6 rounded-lg">
+        <h1 class="text-center text-2xl">ĐĂNG KÝ</h1>
+        <div class="text-center mb-4">hoàn toàn miễn phí</div>
+        <mat-form-field class="w-full">
+            <mat-label>Địa chỉ email</mat-label>
+            <input type="email" matInput required [(ngModel)]="registrationInfor.email" />
+        </mat-form-field>
+        <mat-form-field class="w-full">
+            <mat-label>Mật khẩu</mat-label>
+            <input type="password" matInput required [(ngModel)]="registrationInfor.password" />
+        </mat-form-field>
+        <mat-form-field class="w-full">
+            <mat-label>Họ và Tên</mat-label>
+            <input type="text" matInput required [(ngModel)]="registrationInfor.name" />
+        </mat-form-field>
+        <mat-form-field class="w-full">
+            <mat-label>Tên thương hiệu</mat-label>
+            <input type="text" matInput required [(ngModel)]="registrationInfor.brand" />
+            <mat-hint>Hãy nhập tên thương hiệu hoặc tên của hàng của bạn</mat-hint>
+        </mat-form-field>
+        <mat-form-field class="w-full">
+            <mat-label>Số điện thoại/Zalo</mat-label>
+            <input type="number" matInput required [(ngModel)]="registrationInfor.phone" />
+        </mat-form-field>
+        <mat-form-field class="w-full">
+            <mat-label>Facebook</mat-label>
+            <input type="text" matInput [(ngModel)]="registrationInfor.facebook" />
+        </mat-form-field>
+        <div><strong>LƯU Ý: </strong> Bạn hãy điền đầy đủ thông tin liên hệ để chúng tớ liên
+            hệ bạn cho dễ nhé hoặc chủ
+            động liên hệ với chúng tớ trước qua Zalo: <br>
+            <strong>Nguyễn Trung Nhân: </strong>
+            <br>
+            <ul>
+                <li>Facebook: <a class="underline"
+                        href="https://www.facebook.com/trungnhan.nguyen.7792">trungnhan.nguyen.7792</a>
+                </li>
+                <li>Zalo: 0973.504.713</li>
+            </ul>
+            <strong>Nguyễn Trung Hiệp: </strong>
+            <br>
+            <ul>
+                <li>Facebook: <a class="underline"
+                        href="https://www.facebook.com/trunghiep.nguyen.3194">trunghiep.nguyen.3194</a>
+                </li>
+                <li>Zalo: 0358.756.475</li>
+            </ul>
+        </div>
+        <div class="text-center">
+            <button [disabled]="!registrationInfor.email || !registrationInfor.password ||
+            !registrationInfor.name ||
+            !registrationInfor.phone" mat-flat-button [color]="'primary'"
+                (click)="onSignUp(googleFormsRegistrationDialog)">ĐĂNG KÝ</button>
+        </div>
+    </div>
+</div>
+
+<ng-template #googleFormsRegistrationDialog>
+    <h2 mat-dialog-title>Hi {{registrationInfor?.name}}!</h2>
+    <mat-dialog-content>
+        <p>Hãy xác nhận thông tin bạn sẽ đăng ký với chúng tớ nhé</p>
+        <p><strong>Địa chỉ email:</strong> {{registrationInfor?.email}}</p>
+        <p><strong>Họ và Tên:</strong> {{registrationInfor?.name}}</p>
+        <p><strong>Tên thương hiệu:</strong> {{registrationInfor?.brand}}</p>
+        <p><strong>Số điện thoại/Zalo:</strong> {{registrationInfor?.phone}}</p>
+        @if (registrationInfor?.facebook) {
+        <p><strong>Facebook:</strong> {{registrationInfor?.facebook}}</p>
+        }
+        <div><strong class="text-[red]">LƯU Ý:</strong> Hãy Ấn nút "Gửi" hoặc "Submit" trong Biễu Mẫu bên dưới 👇👇👇
+            thì bạn mới hoàn thành việc đăng ký nhé!</div>
+        <iframe [src]="googleFormsPath | safe" class="w-full min-h-96" frameborder="0"></iframe>
+        <div><strong class="text-[red]">LƯU Ý:</strong> Hãy Ấn nút "Gửi" hoặc "Submit" trong Biễu Mẫu bên trên 👆👆👆
+            thì bạn mới hoàn thành việc đăng ký nhé!</div>
+    </mat-dialog-content>
+    <mat-dialog-actions>
+        <button mat-stroked-button [color]="'primary'" mat-dialog-close>Hoàn thành</button>
+    </mat-dialog-actions>
+</ng-template>

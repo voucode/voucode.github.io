@@ -1,0 +1,69 @@
+<div class="min-h-full flex flex-col justify-center items-center">
+    @if (loggedIn) {
+    @if (customerBrandSetting?.customerForms) {
+    <div class="w-full lg:w-1/2 bg-white p-6 rounded-lg">
+        <h1 class="text-center text-2xl">TẠO KHÁCH HÀNG</h1>
+        <mat-form-field class="w-full">
+            <mat-label>Mã khách hàng</mat-label>
+            <input type="email" matInput required [(ngModel)]="customer.id" />
+            <span matTextPrefix>{{customerBrandSetting?.id}}-</span>
+        </mat-form-field>
+        <mat-form-field class="w-full">
+            <mat-label>Họ và Tên</mat-label>
+            <input type="text" matInput required [(ngModel)]="customer.name" />
+        </mat-form-field>
+        <mat-form-field class="w-full">
+            <mat-label>Số điện thoại/Zalo</mat-label>
+            <input type="number" matInput [(ngModel)]="customer.phone" />
+        </mat-form-field>
+        <div class="text-center">
+            <button mat-flat-button [color]="'primary'" (click)="onConfirmCreateCustomer()">XÁC NHẬN</button>
+        </div>
+        @if (googleFormsPath) {
+        <button class="w-full" mat-stroked-button [color]="'primary'" (click)="googleFormsPath = ''">Đóng biểu
+            mẫu</button>
+        <div><strong class="text-[red]">LƯU Ý:</strong> Hãy Ấn nút "Gửi" hoặc "Submit" trong Biễu Mẫu bên dưới 👇👇👇
+            thì bạn mới hoàn thành việc đăng ký nhé!</div>
+        <div><strong class="text-[red]">LƯU Ý:</strong> Mỗi khi hoàn thành việc tạo bạn nhớ ấn nút "Đóng biểu mẫu để làm
+            mới nhé!"</div>
+        <iframe [src]="googleFormsPath | safe" class="w-full min-h-96" frameborder="0"></iframe>
+        <div><strong class="text-[red]">LƯU Ý:</strong> Hãy Ấn nút "Gửi" hoặc "Submit" trong Biễu Mẫu bên trên 👆👆👆
+            thì bạn mới hoàn thành việc đăng ký nhé!</div>
+        <div><strong class="text-[red]">LƯU Ý:</strong> Mỗi khi hoàn thành việc tạo bạn nhớ ấn nút "Đóng biểu mẫu để làm
+            mới nhé!"</div>
+        }
+    </div>
+    } @else {
+    <div>Đang tìm kiếm biểu mẫu tạo khách hàng của bạn</div>
+    <mat-spinner></mat-spinner>
+    }
+    @if(customers?.length > 0) {
+    <div class="p-4 w-full mt-6">
+        <div class="bg-white rounded-2xl">
+            <mat-form-field class="w-full">
+                <mat-label>Tìm kiếm</mat-label>
+                <input type="text" matInput #search />
+            </mat-form-field>
+            <table class="w-full bg-white">
+                <thead>
+                    <tr>
+                        <th class="text-left p-3">Mã khách hàng</th>
+                        <th class="text-left p-3">Tên khách hàng</th>
+                        <th class="text-left p-3">Điện thoại/Zalo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for(item of customers | searchCustomerByKeyWord: search['value']; track item) {
+                    <tr>
+                        <td class="p-3 border-b">{{item?.id}}</td>
+                        <td class="p-3 border-b">{{item?.name}}</td>
+                        <td class="p-3 border-b">{{item?.phone}}</td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    }
+    }
+</div>

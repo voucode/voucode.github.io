@@ -8,12 +8,21 @@
       <h1>VOUCODE</h1>
     </a>
     <span class="flex-1"></span>
-    <button mat-icon-button class="example-icon favorite-icon" aria-label="Example icon-button with heart icon">
-      <mat-icon>favorite</mat-icon>
+    <button mat-icon-button [matMenuTriggerFor]="menu" class="relative">
+      <mat-icon>account_circle</mat-icon>
+      @if(loggedIn) {
+      <div class="absolute bg-[#f8c861] h-3 w-3 rounded-full top-7"></div>
+      }
     </button>
-    <button mat-icon-button class="example-icon" aria-label="Example icon-button with share icon">
-      <mat-icon>share</mat-icon>
-    </button>
+    <mat-menu #menu="matMenu">
+      @if (!loggedIn) {
+      <button mat-menu-item [routerLink]="'/dang-ky'">Đăng ký</button>
+      <button mat-menu-item [routerLink]="'/dang-nhap'">Đăng nhập</button>
+      }
+      @if (loggedIn) {
+      <button mat-menu-item (click)="onLogout()">Đăng xuất</button>
+      }
+    </mat-menu>
   </mat-toolbar>
   <mat-drawer-container class="example-container flex-1" autosize>
     <mat-drawer #drawer class="example-sidenav !border-r-0" [mode]="sideNavMode || 'side'" [opened]="isShowNavBar">
@@ -23,10 +32,23 @@
       <mat-list role="list">
         <mat-list-item role="listitem" class="h-6 p-6" [routerLinkActive]="'!bg-[#F8C861]'" [routerLink]="'/'">Quét
           Khuyến Mãi</mat-list-item>
+        @if (loggedIn) {
         <mat-list-item role="listitem" class="h-6 p-6" [routerLinkActive]="'!bg-[#F8C861]'"
           [routerLink]="'/voucher'">Phát Khuyến Mãi</mat-list-item>
+        }
+        @if (loggedIn) {
         <mat-list-item role="listitem" class="h-6 p-6" [routerLinkActive]="'!bg-[#F8C861]'" [routerLink]="'/tao'">Tạo
           Khuyến Mãi</mat-list-item>
+
+        }
+        @if (loggedIn) {
+        <mat-list-item role="listitem" class="h-6 p-6" [routerLinkActive]="'!bg-[#F8C861]'"
+          [routerLink]="'/khach-hang'">Khách hàng</mat-list-item>
+        }
+        <mat-list-item role="listitem" class="h-6 p-6" [routerLinkActive]="'!bg-[#F8C861]'"
+          [routerLink]="'/google-drive-correct-link'">
+          Xác định liên kết Google Drive
+        </mat-list-item>
       </mat-list>
     </mat-drawer>
     <router-outlet></router-outlet>
