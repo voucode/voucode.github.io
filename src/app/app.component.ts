@@ -59,6 +59,7 @@ export class AppComponent implements AfterViewChecked {
 
   onLogout() {
     localStorage.removeItem('loggedIn')
+    window.location.reload()
   }
 
   getMasterData() {

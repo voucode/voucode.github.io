@@ -24,7 +24,6 @@ export class CustomerComponent implements AfterViewChecked {
   googleFormsPath: any;
 
   constructor(
-    private masterDataService: MasterDataService,
     private brandService: BrandService,
     private cd: ChangeDetectorRef
   ) {

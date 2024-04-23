@@ -6,7 +6,8 @@ import { SearchCustomerByKeyWordPipe } from '../customer/searchCustomerByKeyWord
 
 
 @NgModule({
-  declarations: [SafePipe,
+  declarations: [
+    SafePipe,
     SearchCustomerByKeyWordPipe
   ],
   imports: [

@@ -13,12 +13,16 @@ export const routes: Routes = [
         component: ScannerComponent
     },
     {
-        path: 'voucher',
+        path: 'khuyen-mai',
         component: VoucherComponent
     },
     {
         path: 'tao',
         component: GeneratorComponent
+    },
+    {
+        path: 'dang-ky',
+        component: RegisterComponent
     },
     {
         path: 'dang-ky',

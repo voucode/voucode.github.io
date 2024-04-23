@@ -14,9 +14,11 @@ export class BrandService {
   readonly registeredWorkbook: any;
   readonly brandWorkbook: any;
   readonly customerWorkbook: any;
+  readonly voucherWorkbook: any;
   readonly registeredData = <any>[];
   readonly brandData = <any>[];
   readonly customerData = <any>[];
+  readonly voucherData = <any>[];
   isActiveRegistered: boolean = false
   brandSetting = <any>{}
 
@@ -107,7 +109,7 @@ export class BrandService {
 
   getCustomerList(id: any) {
     return new Observable((observable) => {
-      if (!this.customerWorkbook) {
+      if (!this.customerWorkbook && this.customerData?.length == 0) {
         const ref: Mutable<this> = this;
         const sheetUrl = this.sheetUrl.replace('{id}', id)
         fetch(sheetUrl)
@@ -118,6 +120,30 @@ export class BrandService {
             const customerData = ref.customerWorkbook.Sheets['Form Responses 1']
             let data = this.decodeRawSheetData(customerData)
             ref.customerData = data
+            const response = {
+              code: data?.length > 0 ? 200 : 404,
+              data: data
+            }
+            observable.next(response)
+            observable.complete()
+          }))
+      }
+    });
+  }
+  
+  getVoucherList(id: any) {
+    return new Observable((observable) => {
+      if (!this.voucherWorkbook && this.voucherData?.length == 0) {
+        const ref: Mutable<this> = this;
+        const sheetUrl = this.sheetUrl.replace('{id}', id)
+        fetch(sheetUrl)
+          .then((res: any) => res.arrayBuffer())
+          .then((req => {
+            const workbook = read(req)
+            ref.voucherWorkbook = workbook
+            const voucherData = ref.voucherWorkbook.Sheets['Form Responses 1']
+            let data = this.decodeRawSheetData(voucherData)
+            ref.voucherData = data
             const response = {
               code: data?.length > 0 ? 200 : 404,
               data: data

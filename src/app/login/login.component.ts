@@ -72,6 +72,8 @@ export class LoginComponent implements AfterViewChecked {
       if ((this.login.userName == this.login.brand?.email || this.login.userName == this.login.brand?.brand) &&
         this.login.password == this.login.brand?.password) {
         localStorage.setItem('loggedIn', JSON.stringify({ userName: this.login.userName, brand: this.login.brand?.brand, }))
+        window.location.reload()
+        window.location.href = '/'
       }
     }
   }

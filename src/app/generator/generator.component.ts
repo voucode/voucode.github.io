@@ -14,13 +14,14 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { QRCodeModule } from 'angularx-qrcode';
 import { BrandService } from '../shared/services/brand/brand.service';
 import { SharedModule } from "../shared/shared.module";
+import { VoucherImageComponent } from "../shared/components/voucher-image/voucher-image.component";
 
 @Component({
-  selector: 'app-generator',
-  standalone: true,
-  templateUrl: './generator.component.html',
-  styleUrl: './generator.component.scss',
-  imports: [MatFormFieldModule, MatDividerModule, MatProgressSpinnerModule, MatExpansionModule, FormsModule, MatIconModule, MatInputModule, MatButtonModule, DragDropModule, DecimalPipe, QRCodeModule, SharedModule]
+    selector: 'app-generator',
+    standalone: true,
+    templateUrl: './generator.component.html',
+    styleUrl: './generator.component.scss',
+    imports: [MatFormFieldModule, MatDividerModule, MatProgressSpinnerModule, MatExpansionModule, FormsModule, MatIconModule, MatInputModule, MatButtonModule, DragDropModule, DecimalPipe, QRCodeModule, SharedModule, VoucherImageComponent]
 })
 export class GeneratorComponent implements OnInit, AfterViewChecked {
 
@@ -91,8 +92,8 @@ export class GeneratorComponent implements OnInit, AfterViewChecked {
   }
 
   updateQrPosition(event?: any) {
-    if (event) {
-      this.voucher.qrPosition = `${event?.event?.layerX - this.voucher.qrSize / 2}:${event?.event?.layerY - this.voucher.qrSize / 2}`
+    if (event) {      
+      this.voucher.qrPosition = `${event?.event?.layerX - event?.event?.offsetX}:${event?.event?.layerY - event?.event?.offsetY}`
     } else {
       this.voucher.qrX = this.voucher.qrPosition.split(':')[0]
       this.voucher.qrY = this.voucher.qrPosition.split(':')[1]
@@ -142,56 +143,10 @@ export class GeneratorComponent implements OnInit, AfterViewChecked {
       event.y = event.y
       event.position = `${event.x}:${event.y}`
     }
-    if (event?.event?.layerX || event?.event?.layerY) {
-      item.position = `${event?.event?.layerX - event?.event?.target?.width / 2}:${event?.event?.layerY - event?.event?.target?.height / 2}`
+    if (event?.event?.layerX || event?.event?.layerY) {      
+      item.position = `${event?.event?.layerX - event?.event?.offsetX}:${event?.event?.layerY - event?.event?.offsetY}`
     }
     this.cd.detectChanges()
-  }
-
-  private convertBase64ToBlob(Base64Image: string) {
-    // split into two parts
-    const parts = Base64Image.split(";base64,")
-    // hold the content type
-    const imageType = parts[0].split(":")[1]
-    // decode base64 string
-    const decodedData = window.atob(parts[1])
-    // create unit8array of size same as row data length
-    const uInt8Array = new Uint8Array(decodedData.length)
-    // insert all character code into uint8array
-    for (let i = 0; i < decodedData.length; ++i) {
-      uInt8Array[i] = decodedData.charCodeAt(i)
-    }
-    // return blob image after conversion
-    return new Blob([uInt8Array], { type: imageType })
-  }
-
-  saveAsImage(element: any) {
-    setTimeout(() => {
-      this.voucher.id = `${this.generatorBrandSetting?.id}-${this.voucher.id}`
-    })
-    setTimeout(() => {
-      this.downloading = true
-      const saveItem = document.getElementById(element?.id)
-      this.captureService
-        //@ts-ignore
-        .getImage(saveItem, true)
-        .pipe(
-          tap((img: string) => {
-            // converts base 64 encoded image to blobData
-            let blobData = this.convertBase64ToBlob(img)
-            // saves as image
-            const blob = new Blob([blobData], { type: "image/png" })
-            const url = window.URL.createObjectURL(blob)
-            const link = document.createElement("a")
-            link.href = url
-            // name of the file            
-            link.download = `${this.voucher.id?.toString()?.replace('.', '_')}`
-            link.click()
-            this.downloading = false
-          })
-        )
-        .subscribe();
-    }, 0)
   }
 
   saveData() {
@@ -214,8 +169,8 @@ export class GeneratorComponent implements OnInit, AfterViewChecked {
                 this.googleFormsPath += `${index === 0 ? '?' : '&'}${this.brandService.brandSetting?.voucherDatabase[k]}=${encodeURIComponent(JSON.stringify(this.voucher[k]?.map((tick: any) => {
                   return {
                     size: tick.size,
-                    x: tick.x,
-                    y: tick.y,
+                    x: tick.x || tick.position.split(':')[0],
+                    y: tick.y || tick.position.split(':')[1],
                   }
                 })))}`
               }
