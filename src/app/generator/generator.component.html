@@ -150,12 +150,15 @@
             }
         </div>
         <div class="text-center mb-6">
-            <button mat-stroked-button color="primary" (click)="saveAsImage(voucherContainer)" [disabled]="downloading">
+            <button mat-stroked-button color="primary" (click)="saveAsImage(voucherContainer)"
+                [disabled]="downloading || (voucher.id ||voucher.name || voucher.size || voucher.qrSize || voucher.qrPosition)">
                 <mat-icon>download</mat-icon> Tải ảnh chia sẻ
             </button>
         </div>
         <div class="text-center">
-            <button mat-raised-button color="primary" (click)="saveData()" [disabled]="downloading" class="w-full">
+            <button mat-raised-button color="primary" (click)="saveData()"
+                [disabled]="downloading || (voucher.id ||voucher.name || voucher.size || voucher.qrSize || voucher.qrPosition)"
+                class="w-full">
                 <mat-icon>save</mat-icon> Lưu Dữ Liệu Mẫu Khuyến Mãi
             </button>
         </div>
