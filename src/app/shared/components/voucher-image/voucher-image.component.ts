@@ -9,11 +9,12 @@ import { QRCodeModule } from 'angularx-qrcode';
 import { MatButtonModule } from '@angular/material/button';
 import { BreakpointObserver, BreakpointState } from '@angular/cdk/layout';
 import { AsyncPipe, DatePipe } from '@angular/common';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-voucher-image',
   standalone: true,
-  imports: [MatIconModule, DragDropModule, FormsModule, QRCodeModule, MatButtonModule, DatePipe, AsyncPipe],
+  imports: [MatIconModule, DragDropModule, FormsModule, QRCodeModule, MatButtonModule, DatePipe, AsyncPipe, MatProgressSpinnerModule],
   templateUrl: './voucher-image.component.html',
   styleUrl: './voucher-image.component.scss'
 })
@@ -69,7 +70,7 @@ export class VoucherImageComponent implements OnInit, OnDestroy {
   }
 
   updateScale() {
-    if (!this.voucher.scale) {
+    if (!this.voucher.scale || this.voucher.scale == 1) {
       const voucherContentWrapper = () => {
         return new Promise((resolve, reject) => {
           const data = document.getElementById('voucherContentWrapper')
@@ -82,12 +83,14 @@ export class VoucherImageComponent implements OnInit, OnDestroy {
             this.voucher.scale = (res?.offsetWidth - 16) / (parseFloat(this.voucher.size?.split('x')[0]))
             if (this.voucher.scale > 0) {
               this.isShowVoucher = true
+              this.cd.detectChanges()
             }
           }
         }, 0)
       })
     } else {
       this.isShowVoucher = true
+      this.cd.detectChanges()
     }
   }
 

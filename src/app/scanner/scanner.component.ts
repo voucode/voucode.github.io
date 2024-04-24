@@ -37,9 +37,8 @@ export class ScannerComponent implements OnInit, AfterViewChecked {
         this.promotion.customerId = query['data'].split('_')[1]
         if (this.promotion?.voucherId) {
           let localStorageData = JSON.parse(localStorage.getItem('loggedIn') || '{}')
-          const loggedId = localStorageData?.brand
-          if (!loggedId) {
-            localStorageData.setItem('loggedIn', JSON.stringify({ brand: this.promotion?.voucherId?.split('-')[0] }))
+          if (!localStorageData?.brand || this.promotion?.voucherId?.split('-')[0] != localStorageData?.brand) {
+            localStorage.setItem('loggedIn', JSON.stringify({ brand: this.promotion?.voucherId?.split('-')[0] }))
             window.location.reload()
           }
         }
@@ -142,8 +141,7 @@ export class ScannerComponent implements OnInit, AfterViewChecked {
       this.promotion.customerId = data?.split('_')[1]
       if (this.promotion?.voucherId) {
         let localStorageData = JSON.parse(localStorage.getItem('loggedIn') || '{}')
-        const loggedId = localStorageData?.brand
-        if (!loggedId) {
+        if (!localStorageData?.brand || this.promotion?.voucherId?.split('-')[0] != localStorageData?.brand) {
           localStorage.setItem('loggedIn', JSON.stringify({ brand: this.promotion?.voucherId?.split('-')[0] }))
           window.location.href = data
         }
