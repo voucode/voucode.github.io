@@ -5,7 +5,7 @@
         <h1 class="text-center text-2xl">TẠO KHÁCH HÀNG</h1>
         <mat-form-field class="w-full">
             <mat-label>Mã khách hàng</mat-label>
-            <input type="email" matInput required [(ngModel)]="customer.id" />
+            <input type="email" matInput required [(ngModel)]="customer.id" (keypress)="onPress($event)" />
             <span matTextPrefix>{{customerBrandSetting?.id}}-</span>
         </mat-form-field>
         <mat-form-field class="w-full">

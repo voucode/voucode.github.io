@@ -1,9 +1,6 @@
-<div class="min-h-full flex flex-col justify-center items-center">
+<div class="min-h-full flex justify-center flex-col lg:flex-row">
     @if (loggedIn) {
     @if (customerBrandSetting?.customerForms) {
-    @if(voucher.customerId && voucher.voucherId) {
-    <app-voucher-image class="w-full" [voucher]="voucher?.voucher" [readonly]="true"></app-voucher-image>
-    }
     <div class="w-full lg:w-1/2 bg-white p-6 rounded-lg">
         <h1 class="text-center text-2xl">PHÁT KHUYẾN MÃI</h1>
         <mat-form-field class="w-full">
@@ -45,9 +42,14 @@
             mới nhé!"</div>
         }
     </div>
+    @if(voucher.customerId && voucher.voucherId) {
+    <app-voucher-image class="w-full lg:w-1/2" [voucher]="voucher?.voucher" [readonly]="true"></app-voucher-image>
+    }
     } @else {
-    <div>Đang tìm kiếm biểu mẫu tạo khách hàng của bạn</div>
-    <mat-spinner></mat-spinner>
+    <div class="flex flex-col items-center justify-center">
+        <div>Đang tìm kiếm biểu mẫu tạo khách hàng của bạn</div>
+        <mat-spinner></mat-spinner>
+    </div>
     }
     }
 </div>

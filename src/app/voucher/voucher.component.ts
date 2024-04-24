@@ -1,4 +1,4 @@
-import { AfterViewChecked, ChangeDetectorRef, Component } from '@angular/core';
+import { AfterViewChecked, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { BrandService } from '../shared/services/brand/brand.service';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -18,7 +18,7 @@ import { VoucherImageComponent } from "../shared/components/voucher-image/vouche
   styleUrl: './voucher.component.scss',
   imports: [MatSelectModule, MatFormFieldModule, FormsModule, MatInputModule, MatButtonModule, MatDialogModule, SharedModule, MatProgressSpinnerModule, MatProgressBarModule, VoucherImageComponent]
 })
-export class VoucherComponent implements AfterViewChecked {
+export class VoucherComponent implements AfterViewChecked, OnInit {
 
   customerBrandSetting = <any>{}
   voucher = <any>{
@@ -33,18 +33,36 @@ export class VoucherComponent implements AfterViewChecked {
     private brandService: BrandService,
     private cd: ChangeDetectorRef
   ) {
+  }
+
+  ngOnInit(): void {
+    this.customerBrandSetting = <any>{}
+    this.voucher = <any>{
+      voucher: <any>{}
+    }
+    this.loggedIn = false;
+    this.googleFormsPath = '';
+    this.customers = <any>[]
+    this.vouchers = <any>[]
     this.loggedIn = !!localStorage.getItem('loggedIn')
+    this.fetchInitData()
   }
 
   ngAfterViewChecked(): void {
+    this.fetchInitData()
+  }
+
+  fetchInitData() {
     if (!this.customerBrandSetting?.customerForms) {
       this.getBrandSetting()
     }
-    if (this.customerBrandSetting?.customerDatabase && this.customers?.length == 0) {
-      this.getCustomerList()
-    }
-    if (this.customerBrandSetting?.voucherDatabase && this.vouchers?.length == 0) {
-      this.getVoucherList()
+    if (this.customerBrandSetting?.customerForms) {
+      if (this.customers?.length == 0) {
+        this.getCustomerList()
+      }
+      if (this.vouchers?.length == 0) {
+        this.getVoucherList()
+      }
     }
   }
 
@@ -54,19 +72,31 @@ export class VoucherComponent implements AfterViewChecked {
   }
 
   getCustomerList() {
-    this.brandService.getCustomerList(this.customerBrandSetting?.customerDatabase)?.subscribe((res: any) => {
-      if (res.code === 200) {
-        this.customers = res.data
+    if (this.customerBrandSetting?.customerDatabase) {
+      try {
+        this.brandService.getCustomerList(this.customerBrandSetting?.customerDatabase)?.subscribe((res: any) => {
+          if (res.code === 200) {
+            this.customers = res.data
+          }
+        })
+      } catch (e) {
+        console.error(e);
       }
-    })
+    }
   }
 
   getVoucherList() {
-    this.brandService.getVoucherList(this.customerBrandSetting?.voucherDatabase)?.subscribe((res: any) => {
-      if (res.code === 200) {
-        this.vouchers = res.data
+    if (this.customerBrandSetting?.voucherDatabase) {
+      try {
+        this.brandService.getVoucherList(this.customerBrandSetting?.voucherDatabase)?.subscribe((res: any) => {
+          if (res.code === 200) {
+            this.vouchers = res.data
+          }
+        })
+      } catch (e) {
+        console.error(e);
       }
-    })
+    }
   }
 
   updateValue() {
@@ -83,14 +113,14 @@ export class VoucherComponent implements AfterViewChecked {
       }
     }
     if (this.voucher.voucherId && this.voucher.customerId) {
-      this.voucher.voucher.qrData += `${this.voucher.voucherId}-${this.voucher.customerId}`
+      this.voucher.voucher.qrData = `${window.location.origin}/${this.voucher.voucherId}_${this.voucher.customerId}`
     }
-    console.log(this.voucher);
   }
 
   onConfirmCreateVoucher() {
-    console.log(this.voucher);
-    this.voucher = this
-
+    if (this.customerBrandSetting?.customerVoucherForms?.includes('http')) {
+      this.customerBrandSetting.customerVoucherForms = this.customerBrandSetting?.customerVoucherForms?.split('e/')[1]?.split('/')[0]
+    }
+    this.googleFormsPath = `https://docs.google.com/forms/d/e/${this.customerBrandSetting?.customerVoucherForms}/viewform?${this.brandService.brandSetting?.customerVoucherDatabase?.voucherId}=${encodeURIComponent(this.voucher.voucherId)}&${this.brandService.brandSetting?.customerVoucherDatabase?.customerId}=${encodeURIComponent(this.voucher.customerId)}&${this.brandService.brandSetting?.customerVoucherDatabase?.action}=add`
   }
 }

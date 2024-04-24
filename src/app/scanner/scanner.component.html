@@ -1,10 +1,94 @@
-<div class="h-full relative">
+<button mat-stroked-button [color]="'primary'" class="w-full"
+    (click)="toggleScanner()"><mat-icon>qr_code_scanner</mat-icon> {{isShowScanner
+    ? 'Ẩn' : 'Hiện'}}
+    máy quét</button>
+<div class="w-full h-full flex items-center flex-col">
     @if (isShowScanner) {
     <div class="w-full lg:w-1/2">
         <cp-qr-scanner (qrData)="scanComplete($event)"></cp-qr-scanner>
     </div>
     }
-    <div class="w-full lg:w-1/2">
-        
+    @if(promotion?.voucher && promotion?.customer) {
+    <div class="w-full p-3">
+        @if (promotion?.customer) {
+        <div class="font-bold">Khách hàng</div>
+        <table class="w-full">
+            <tbody>
+                @if (promotion?.customer?.id) {
+                <tr>
+                    <td class="px-3">Mã:</td>
+                    <td class="px-3">{{promotion?.customer?.id}}</td>
+                </tr>
+                }
+                @if (promotion?.customer?.name) {
+                <tr>
+                    <td class="px-3">Tên:</td>
+                    <td class="px-3">{{promotion?.customer?.name}}</td>
+                </tr>
+                }
+                @if (promotion?.customer?.phone) {
+                <tr>
+                    <td class="px-3">Số điện thoại/Zalo:</td>
+                    <td class="px-3">{{promotion?.customer?.phone}}</td>
+                </tr>
+                }
+            </tbody>
+        </table>
+        }
+        @if (promotion?.voucher) {
+        <div class="font-bold">Chương trình</div>
+        <table class="w-full">
+            <tbody>
+                @if (promotion?.voucher?.id) {
+                <tr>
+                    <td class="px-3">Mã:</td>
+                    <td class="px-3">{{promotion?.voucher?.id}}</td>
+                </tr>
+                }
+                @if (promotion?.voucher?.name) {
+                <tr>
+                    <td class="px-3">Tên:</td>
+                    <td class="px-3">{{promotion?.voucher?.name}}</td>
+                </tr>
+                }
+            </tbody>
+        </table>
+        }
+        @if (promotion?.foundData?.length > 0) {
+        @if (promotion?.voucher?.rawTicks?.length > 0) {
+        <div><strong>Đã tích điểm: </strong> <span class="text-4xl"> {{promotion?.foundData?.length ?
+                (promotion?.foundData?.length - 1 |
+                number:
+                '2.0-0') : ''}}/{{promotion?.voucher?.rawTicks?.length | number: '2.0-0'}}</span></div>
+        } @else {
+        <div>
+            <strong>Đã dùng? </strong>
+            @if (promotion?.foundData?.length > 1) {
+            <span class="text-4xl">Đã dùng</span>
+            } @else {
+            <span class="text-4xl">Chưa dùng</span>
+            }
+        </div>
+        }
+        }
+        @if (promotion?.foundData?.length > 0) {
+        <button mat-flat-button [color]="'primary'" class="w-full" (click)="updatePath()">Cập nhật</button>
+        @if (googleFormsPath) {
+        <button class="w-full" mat-stroked-button [color]="'primary'" (click)="googleFormsPath = ''">Đóng biểu
+            mẫu</button>
+        <div><strong class="text-[red]">LƯU Ý:</strong> Hãy Ấn nút "Gửi" hoặc "Submit" trong Biễu Mẫu bên dưới 👇👇👇
+            thì bạn mới hoàn thành việc đăng ký nhé!</div>
+        <div><strong class="text-[red]">LƯU Ý:</strong> Mỗi khi hoàn thành việc tạo bạn nhớ ấn nút "Đóng biểu mẫu để làm
+            mới nhé!"</div>
+        <iframe [src]="googleFormsPath | safe" class="w-full min-h-96" frameborder="0"></iframe>
+        <div><strong class="text-[red]">LƯU Ý:</strong> Hãy Ấn nút "Gửi" hoặc "Submit" trong Biễu Mẫu bên trên 👆👆👆
+            thì bạn mới hoàn thành việc đăng ký nhé!</div>
+        <div><strong class="text-[red]">LƯU Ý:</strong> Mỗi khi hoàn thành việc tạo bạn nhớ ấn nút "Đóng biểu mẫu để làm
+            mới nhé!"</div>
+        }
+        }
     </div>
+    <app-voucher-image class="w-full" [class]="{'lg:w-1/2': isShowScanner}" [voucher]="promotion?.voucher"
+        [readonly]="true"></app-voucher-image>
+    }
 </div>

@@ -9,10 +9,6 @@ import { LoginComponent } from './login/login.component';
 
 export const routes: Routes = [
     {
-        path: '',
-        component: ScannerComponent
-    },
-    {
         path: 'khuyen-mai',
         component: VoucherComponent
     },
@@ -40,5 +36,13 @@ export const routes: Routes = [
         path: 'khach-hang',
         component: CustomerComponent,
         canActivate: []
-    }
+    },
+    {
+        path: '',
+        component: ScannerComponent
+    },
+    {
+        path: ':data',
+        component: ScannerComponent
+    },
 ];

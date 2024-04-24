@@ -39,7 +39,7 @@ export class AppComponent implements AfterViewChecked {
       .subscribe((state: BreakpointState) => {
         this.isShowNavBar = !state.matches;
       });
-    this.loggedIn = !!localStorage.getItem('loggedIn')
+    this.loggedIn = !!JSON.parse(localStorage.getItem('loggedIn') || '{}')?.userName
   }
 
   ngAfterViewChecked(): void {
@@ -106,9 +106,9 @@ export class AppComponent implements AfterViewChecked {
                   this.brandService.brandSetting[item][row?.field] = row?.trigger
                 })
               })
-              this.brandSetting = this.brandService.brandSetting
+              this.brandSetting = this.brandService.brandSetting?.global
               // console.log(this.brandSetting);
-              
+
               loggedIn.trigger = this.loggedInBrand?.trigger
               localStorage.setItem('loggedIn', JSON.stringify(loggedIn))
             }

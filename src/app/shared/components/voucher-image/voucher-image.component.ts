@@ -1,34 +1,94 @@
-import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
+import { AfterViewChecked, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { NgxCaptureService } from 'ngx-capture';
-import { tap } from 'rxjs';
+import { map, takeWhile, tap, timer } from 'rxjs';
 import { BrandService } from '../../services/brand/brand.service';
 import { MatIconModule } from '@angular/material/icon';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { FormsModule } from '@angular/forms';
 import { QRCodeModule } from 'angularx-qrcode';
 import { MatButtonModule } from '@angular/material/button';
+import { BreakpointObserver, BreakpointState } from '@angular/cdk/layout';
+import { AsyncPipe, DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-voucher-image',
   standalone: true,
-  imports: [MatIconModule, DragDropModule, FormsModule, QRCodeModule, MatButtonModule],
+  imports: [MatIconModule, DragDropModule, FormsModule, QRCodeModule, MatButtonModule, DatePipe, AsyncPipe],
   templateUrl: './voucher-image.component.html',
   styleUrl: './voucher-image.component.scss'
 })
-export class VoucherImageComponent {
+export class VoucherImageComponent implements OnInit, OnDestroy {
   @Input('voucher') voucher = <any>{};
   @Input('readonly') readonly: boolean = false;
   @Output() updateQrPosition = new EventEmitter();
   @Output() uploadTick = new EventEmitter();
   @Output() updateImageSize = new EventEmitter();
+  @ViewChild('voucherContainer') voucherContainer?: ElementRef;
   downloading: boolean = false
+  isPhone: boolean = false
+  isShowVoucher: boolean = false
+  countDown: any;
+  seconds: any = 5;
 
   constructor(
     private cd: ChangeDetectorRef,
     private captureService: NgxCaptureService,
-    private brandService: BrandService
+    private breakpointObserver: BreakpointObserver,
   ) {
+    this.breakpointObserver
+      .observe(['(max-width: 600px)'])
+      .subscribe((state: BreakpointState) => {
+        this.isPhone = state.matches;
+      });
+  }
 
+  ngOnInit(): void {
+    this.isShowVoucher = false
+    this.countDown = timer(0, 1000).pipe(
+      map(n => (this.seconds - n) * 1000),
+      takeWhile(n => n >= 0),
+    )
+    this.countDown?.subscribe((n: any) => {
+      this.isShowVoucher = false
+      if (n === 0) {
+        if (this.readonly && !this.voucher.scale) {
+          this.updateScale()
+        }
+        this.cd.detectChanges()
+        this.isShowVoucher = true
+      }
+    })
+  }
+
+  ngOnDestroy(): void {
+    this.downloading = false
+    this.isPhone = false
+    this.isShowVoucher = false
+    this.countDown = null;
+    this.seconds = 5;
+  }
+
+  updateScale() {
+    if (!this.voucher.scale) {
+      const voucherContentWrapper = () => {
+        return new Promise((resolve, reject) => {
+          const data = document.getElementById('voucherContentWrapper')
+          resolve(data);
+        });
+      }
+      voucherContentWrapper().then((res: any) => {
+        setTimeout(() => {
+          if (res) {
+            this.voucher.scale = (res?.offsetWidth - 16) / (parseFloat(this.voucher.size?.split('x')[0]))
+            if (this.voucher.scale > 0) {
+              this.isShowVoucher = true
+            }
+          }
+        }, 0)
+      })
+    } else {
+      this.isShowVoucher = true
+    }
   }
 
   private convertBase64ToBlob(Base64Image: string) {
@@ -49,9 +109,13 @@ export class VoucherImageComponent {
   }
 
   saveAsImage(element: any) {
+    if (this.readonly) {
+      this.voucher.ticks = []
+      this.voucher.scale = 1
+    }
     setTimeout(() => {
-      if (!this.voucher?.id?.includes(this.brandService.brandSetting?.global?.id)) {
-        this.voucher.qrData = `${this.brandService.brandSetting?.global?.id}-${this.voucher.id}`
+      if (!this.voucher.qrData) {
+        this.voucher.qrData = `${this.voucher.id}`
       }
     })
     setTimeout(() => {
@@ -69,10 +133,12 @@ export class VoucherImageComponent {
             const url = window.URL.createObjectURL(blob)
             const link = document.createElement("a")
             link.href = url
-            // name of the file            
-            link.download = `${this.voucher.id?.toString()?.replace('.', '_')}`
+            // name of the file
+            link.download = `${this.readonly ? this.voucher?.qrData?.split('/')[this.voucher?.qrData?.split('/')?.length - 1] : this.voucher.id?.toString()?.replace('.', '_')}`
+            this.cd.detectChanges()
             link.click()
             this.downloading = false
+            this.updateScale()
           })
         )
         .subscribe();
@@ -89,9 +155,10 @@ export class VoucherImageComponent {
 
   onUpdateImageSize(event: any) {
     if (this.readonly) {
-      this.voucher.height = `${event?.target.height}`
-      this.voucher.width = `${event?.target.width}`
-      this.voucher.size = `${event?.target.width}x${event?.target.height}`
+      // this.voucher.height = `${event?.target.height}`
+      // this.voucher.width = `${event?.target.width}`
+      // this.voucher.size = `${event?.target.width}x${event?.target.height}`
+      // this.updateScale()
     }
     this.updateImageSize.emit(event)
   }

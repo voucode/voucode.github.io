@@ -10,11 +10,11 @@ import { MasterDataService } from '../shared/services/masterData/master-data.ser
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
-    selector: 'app-customer',
-    standalone: true,
-    templateUrl: './customer.component.html',
-    styleUrl: './customer.component.scss',
-    imports: [MatFormFieldModule, FormsModule, MatInputModule, MatButtonModule, MatDialogModule, SharedModule, MatProgressSpinnerModule]
+  selector: 'app-customer',
+  standalone: true,
+  templateUrl: './customer.component.html',
+  styleUrl: './customer.component.scss',
+  imports: [MatFormFieldModule, FormsModule, MatInputModule, MatButtonModule, MatDialogModule, SharedModule, MatProgressSpinnerModule]
 })
 export class CustomerComponent implements AfterViewChecked {
   customer = <any>{}
@@ -71,5 +71,12 @@ export class CustomerComponent implements AfterViewChecked {
         this.customers = res.data
       }
     })
+  }
+
+  onPress(evt: any) {
+    var charCode = evt.charCode;    
+    if (charCode == 32 || charCode == 47 || charCode == 95)
+      return false;
+    return true;
   }
 }

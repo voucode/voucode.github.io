@@ -8,6 +8,10 @@
       <h1>VOUCODE</h1>
     </a>
     <span class="flex-1"></span>
+    @if(brandSetting?.logo) {
+    <img [src]="brandSetting?.logo" alt="logo" class="h-10">
+    }
+    <span class="flex-1"></span>
     <button mat-icon-button [matMenuTriggerFor]="menu" class="relative">
       <mat-icon>account_circle</mat-icon>
       @if(loggedIn) {

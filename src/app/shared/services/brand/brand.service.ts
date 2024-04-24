@@ -15,10 +15,12 @@ export class BrandService {
   readonly brandWorkbook: any;
   readonly customerWorkbook: any;
   readonly voucherWorkbook: any;
+  readonly customerVoucherWorkbook: any;
   readonly registeredData = <any>[];
   readonly brandData = <any>[];
   readonly customerData = <any>[];
   readonly voucherData = <any>[];
+  readonly customerVoucherData = <any>[];
   isActiveRegistered: boolean = false
   brandSetting = <any>{}
 
@@ -109,48 +111,108 @@ export class BrandService {
 
   getCustomerList(id: any) {
     return new Observable((observable) => {
+      const returnData = (data: any) => {
+        const ref: Mutable<this> = this;
+        ref.customerData = data
+        const response = {
+          code: data?.length > 0 ? 200 : 404,
+          data: data
+        }
+        observable.next(response)
+        observable.complete()
+      }
       if (!this.customerWorkbook && this.customerData?.length == 0) {
         const ref: Mutable<this> = this;
         const sheetUrl = this.sheetUrl.replace('{id}', id)
-        fetch(sheetUrl)
-          .then((res: any) => res.arrayBuffer())
-          .then((req => {
-            const workbook = read(req)
-            ref.customerWorkbook = workbook
-            const customerData = ref.customerWorkbook.Sheets['Form Responses 1']
-            let data = this.decodeRawSheetData(customerData)
-            ref.customerData = data
-            const response = {
-              code: data?.length > 0 ? 200 : 404,
-              data: data
-            }
-            observable.next(response)
-            observable.complete()
-          }))
+        try {
+          fetch(sheetUrl)
+            .then((res: any) => res.arrayBuffer())
+            .then((req => {
+              const workbook = read(req)
+              ref.customerWorkbook = workbook
+              const customerData = ref.customerWorkbook.Sheets['Form Responses 1']
+              let data = this.decodeRawSheetData(customerData)
+              returnData(data)
+            }))
+        } catch (e) {
+          console.log(e);
+        }
+      } else {
+        if (this.customerData?.length > 0) {
+          returnData(this.customerData)
+        }
       }
     });
   }
-  
+
+  getCustomerVoucherList(id: any) {
+    return new Observable((observable) => {
+      const returnData = (data: any) => {
+        const ref: Mutable<this> = this;
+        ref.customerVoucherData = data
+        const response = {
+          code: data?.length > 0 ? 200 : 404,
+          data: data
+        }
+        observable.next(response)
+        observable.complete()
+      }
+      if (!this.customerVoucherWorkbook && this.customerVoucherData?.length == 0) {
+        const ref: Mutable<this> = this;
+        const sheetUrl = this.sheetUrl.replace('{id}', id)
+        try {
+          fetch(sheetUrl)
+            .then((res: any) => res.arrayBuffer())
+            .then((req => {
+              const workbook = read(req)
+              ref.customerVoucherWorkbook = workbook
+              const customerVoucherData = ref.customerVoucherWorkbook.Sheets['Form Responses 1']
+              let data = this.decodeRawSheetData(customerVoucherData)
+              returnData(data)
+            }))
+        } catch (e) {
+          console.log(e);
+        }
+      } else {
+        if (this.customerVoucherData?.length > 0) {
+          returnData(this.customerVoucherData)
+        }
+      }
+    });
+  }
+
   getVoucherList(id: any) {
     return new Observable((observable) => {
+      const returnData = (data: any) => {
+        const ref: Mutable<this> = this;
+        ref.voucherData = data
+        const response = {
+          code: data?.length > 0 ? 200 : 404,
+          data: data
+        }
+        observable.next(response)
+        observable.complete()
+      }
       if (!this.voucherWorkbook && this.voucherData?.length == 0) {
         const ref: Mutable<this> = this;
         const sheetUrl = this.sheetUrl.replace('{id}', id)
-        fetch(sheetUrl)
-          .then((res: any) => res.arrayBuffer())
-          .then((req => {
-            const workbook = read(req)
-            ref.voucherWorkbook = workbook
-            const voucherData = ref.voucherWorkbook.Sheets['Form Responses 1']
-            let data = this.decodeRawSheetData(voucherData)
-            ref.voucherData = data
-            const response = {
-              code: data?.length > 0 ? 200 : 404,
-              data: data
-            }
-            observable.next(response)
-            observable.complete()
-          }))
+        try {
+          fetch(sheetUrl)
+            .then((res: any) => res.arrayBuffer())
+            .then((req => {
+              const workbook = read(req)
+              ref.voucherWorkbook = workbook
+              const voucherData = ref.voucherWorkbook.Sheets['Form Responses 1']
+              let data = this.decodeRawSheetData(voucherData)
+              returnData(data)
+            }))
+        } catch (e) {
+          console.log(e);
+        }
+      } else {
+        if (this.voucherData?.length > 0) {
+          returnData(this.voucherData)
+        }
       }
     });
   }

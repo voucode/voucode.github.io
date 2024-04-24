@@ -195,4 +195,11 @@ export class GeneratorComponent implements OnInit, AfterViewChecked {
         })
     }
   }
+
+  onPress(evt: any) {
+    var charCode = evt.charCode;
+    if (charCode == 32 || charCode == 47 || charCode == 95)
+      return false;
+    return true;
+  }
 }

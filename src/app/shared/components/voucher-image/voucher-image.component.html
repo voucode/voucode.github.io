@@ -1,46 +1,63 @@
-<div #voucherContainer class="h-96 w-full border relative z-10 select-none" [id]="'voucherContainerId'" [style]="{
-    height: voucher.height ? (voucher.height + 'px') : '',
-    width: voucher.width ? (voucher.width + 'px') : '',
-    }">
-    <div [style]="{
-        height: voucher.qrSize + 'px',
-        width: voucher.qrSize + 'px',
-        transform: 'translate3d(' + voucher.qrX +'px, ' + voucher.qrY + 'px, 0px)'
-    }" class="absolute top-0 left-0 border flex justify-center items-center cursor-move bg-white z-10"
-        [cdkDragDisabled]="!voucher?.backgroundImage || readonly" cdkDragBoundary="#voucherContainerId" cdkDrag
-        (cdkDragEnded)="onUpdateQrPosition($event)">
-        @if(voucher.id) {
-        <qrcode #sync [qrdata]="voucher.qrData" [width]="voucher.qrSize" [imageHeight]="voucher.qrIconSize"
-            [imageWidth]="voucher.qrIconSize" [cssClass]="'flex justify-center'" [errorCorrectionLevel]="'M'"
-            [colorDark]="'#000000ff'" [colorLight]="'#ffffffff'" [elementType]="'canvas'" [margin]="4" [scale]="128">
-        </qrcode>
-        } @else {
-        QR
-        }
-    </div>
-    @for (item of voucher?.ticks; track item) {
-    <div [style]="{
-                height: item.size + 'px',
-                width: item.size + 'px',
-                transform: 'translate3d(' + item.x +'px, ' + item.y + 'px, 0px)'
-            }" class="absolute top-0 left-0 flex justify-center items-center cursor-move z-20"
-        [cdkDragDisabled]="!voucher?.backgroundImage || readonly" cdkDragBoundary="#voucherContainerId" cdkDrag
-        (cdkDragEnded)="onUploadTick($event, item)">
-        <img [src]="voucher?.tickImage" alt="tickImage">
-    </div>
-    }
-    @if (voucher?.backgroundImage) {
-    <img [src]="voucher?.backgroundImage" alt="background" (load)="onUpdateImageSize($event)"
-        class="absolute top-0 right-0 bottom-0 left-0 max-w-none h-auto">
-    } @else {
-    <div class="absolute top-0 right-0 bottom-0 left-0 flex justify-center items-center text-center text-lg">
-        Hãy thực hiện các bước <strong class="text-[red] mx-1"> chính xác</strong> ở phía trên thì bạn mới có
-        thể tiến hành chỉnh sửa khuyến mãi
-    </div>
-    }
-</div>
 <div class="text-center mb-6">
     <button mat-stroked-button color="primary" (click)="saveAsImage(voucherContainer)">
         <mat-icon>download</mat-icon> Tải ảnh chia sẻ
     </button>
+</div>
+<div id="voucherContentWrapper">
+    @if (countDown && !isShowVoucher) {
+    <div class="w-full text-center">
+        <div class="flex items-center justify-center mt-4">
+            <span>cho chúng mình</span>
+            <span class="text-6xl mx-3">{{countDown | async | date: 'ss'}}</span>
+            <span>giây</span>
+        </div>
+        <div>để chuẩn bị hình ảnh cho bạn nhé!</div>
+    </div>
+    }
+    @if (isShowVoucher) {
+    <div #voucherContainer class="min-h-96 w-full border relative z-10 select-none origin-top-left"
+        [id]="'voucherContainerId'" [style]="{
+            height: voucher.height ? (voucher.height + 'px') : '',
+            width: voucher.width ? (voucher.width + 'px') : '',
+            transform: voucher.scale ? 'scale(' + voucher.scale + ')' : '',
+            }">
+        <div [style]="{
+                height: voucher.qrSize + 'px',
+                width: voucher.qrSize + 'px',
+                transform: 'translate3d(' + voucher.qrX +'px, ' + voucher.qrY + 'px, 0px)'
+            }" class="absolute top-0 left-0 border flex justify-center items-center cursor-move bg-white z-10"
+            [cdkDragDisabled]="!voucher?.backgroundImage || readonly" cdkDragBoundary="#voucherContainerId" cdkDrag
+            (cdkDragEnded)="onUpdateQrPosition($event)">
+            @if(voucher.id) {
+            <qrcode #sync [qrdata]="voucher.qrData" [width]="voucher.qrSize" [imageHeight]="voucher.qrIconSize"
+                [imageWidth]="voucher.qrIconSize" [cssClass]="'flex justify-center'" [errorCorrectionLevel]="'M'"
+                [colorDark]="'#000000ff'" [colorLight]="'#ffffffff'" [elementType]="'canvas'" [margin]="4"
+                [scale]="128">
+            </qrcode>
+            } @else {
+            QR
+            }
+        </div>
+        @for (item of voucher?.ticks; track item) {
+        <div [style]="{
+                        height: item?.size + 'px',
+                        width: item?.size + 'px',
+                        transform: 'translate3d(' + item?.x +'px, ' + item?.y + 'px, 0px)'
+                    }" class="absolute top-0 left-0 flex justify-center items-center cursor-move z-20"
+            [cdkDragDisabled]="!voucher?.backgroundImage || readonly" cdkDragBoundary="#voucherContainerId" cdkDrag
+            (cdkDragEnded)="onUploadTick($event, item)">
+            <img [src]="voucher?.tickImage" alt="tickImage">
+        </div>
+        }
+        @if (voucher?.backgroundImage) {
+        <img [src]="voucher?.backgroundImage" alt="background" (load)="onUpdateImageSize($event)"
+            class="max-w-none h-auto">
+        } @else {
+        <div class="absolute top-0 right-0 bottom-0 left-0 flex justify-center items-center text-center text-lg">
+            Hãy thực hiện các bước <strong class="text-[red] mx-1"> chính xác</strong> ở phía trên thì bạn mới có
+            thể tiến hành chỉnh sửa khuyến mãi
+        </div>
+        }
+    </div>
+    }
 </div>
