@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "public": "dist/voucqr",
+    "public": "dist/voucqr/browser",
     "ignore": [
       "firebase.json",
       "**/.*",
