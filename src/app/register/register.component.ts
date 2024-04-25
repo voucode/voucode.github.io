@@ -55,10 +55,10 @@ export class RegisterComponent implements OnInit, AfterViewChecked {
     if (this.registrationTrigger?.googleFormsId) {
       this.googleFormsPath = `https://docs.google.com/forms/d/e/${this.registrationTrigger?.googleFormsId}/viewform`
       Object.keys(this.registrationTrigger)
-        ?.filter((item: any) => item !== 'googleFormsId')
+        ?.filter((item: any) => item !== 'googleFormsId' && item !== 'sheet')
         ?.forEach((k: any, index) => {
-          if (this.registrationInfor[k]) {
-            this.googleFormsPath += `${index === 0 ? '?' : '&'}${this.registrationTrigger[k]}=${encodeURIComponent(this.registrationInfor[k])}`
+          if (this.registrationInfor[k]) {            
+            this.googleFormsPath = this.googleFormsPath + `${index === 0 ? '?' : '&'}${this.registrationTrigger[k]}=${encodeURIComponent(this.registrationInfor[k])}`
           }
         })
       const googleFormsRegistrationDialogRef = this.matDialog.open(googleFormsRegistrationDialog);
