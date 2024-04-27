@@ -1,4 +1,4 @@
-import { AfterViewChecked, ChangeDetectorRef, Component } from '@angular/core';
+import { AfterViewChecked, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -16,7 +16,7 @@ import { MatSelectModule } from '@angular/material/select';
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })
-export class LoginComponent implements AfterViewChecked {
+export class LoginComponent implements OnInit {
   login = <any>{};
   registrationTrigger = <any>{};
   users = <any>[];
@@ -29,51 +29,46 @@ export class LoginComponent implements AfterViewChecked {
 
   }
 
-  ngAfterViewChecked(): void {
+  ngOnInit(): void {
     if (!this.registrationTrigger?.sheet) {
       this.getMasterData()
     }
-    if (this.users?.length === 0) {
-      if (this.registrationTrigger?.sheet) {
-        this.brandService.fetchRegisteredData(this.registrationTrigger?.sheet)
-        this.getRegisteredData()
-      }
-    }
-  }
-
-  getRegisteredData() {
-    this.brandService.getRegisteredData()
-      .subscribe((res: any) => {
-        if (res.code === 200) {
-          this.users = res.data
-          this.cd.detectChanges()
-        }
-      })
   }
 
   getMasterData() {
-    this.masterDataService.getMasterData()
+    this.masterDataService.fetchMasterData()
       .subscribe((res: any) => {
-        if (res.code === 200) {
-          const registrationData = res.data?.filter((item: any) => item?.base == "registration")
-          if (registrationData?.length > 0) {
-            registrationData?.forEach((item: any) => {
-              if (item?.trigger) {
-                this.registrationTrigger[item?.field] = item?.trigger
-              }
-            })
+        if (res.status === 200) {
+          this.registrationTrigger = res.setting
+          if (this.users?.length === 0) {
+            if (this.registrationTrigger?.sheet) {
+              this.getRegisteredData()
+            }
           }
         }
       })
   }
 
+  getRegisteredData() {
+    this.brandService.fetchRegisteredData(this.registrationTrigger?.sheet)
+      .subscribe((res: any) => {
+        if (res.status === 200) {
+          this.users = res.data
+        }
+      })
+  }
+  
+  errorMessage: any;
   onLogin() {
+    this.errorMessage = ''
     if (this.login.brand) {
       if ((this.login.userName == this.login.brand?.email || this.login.userName == this.login.brand?.brand) &&
         this.login.password == this.login.brand?.password) {
         localStorage.setItem('loggedIn', JSON.stringify({ userName: this.login.userName, brand: this.login.brand?.brand, }))
         window.location.reload()
         window.location.href = '/'
+      } else {
+        this.errorMessage = 'Thông tin đăng nhập không đúng, vui lòng thử lại hoặc liên hệ team IT để được hỗ trợ'
       }
     }
   }

@@ -51,7 +51,11 @@
                 }
               ],
               "outputHashing": "all",
-              "serviceWorker": "ngsw-config.json"
+              "serviceWorker": "ngsw-config.json",
+              "allowedCommonJsDependencies": [
+                "qrcode",
+                "html2canvas"
+              ]
             },
             "development": {
               "optimization": false,

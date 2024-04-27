@@ -1,6 +1,6 @@
 <mat-form-field class="w-full" *ngIf="action.devices.value.length > 0">
   <mat-label>Chọn thiết bị quét</mat-label>
-  <mat-select [ngModel]="null" (ngModelChange)="action.playDevice($event)">
+  <mat-select [(ngModel)]="currentDevice" (ngModelChange)="action.playDevice($event)">
     <mat-option
       *ngFor="let c of action.devices.value; let i = index"
       [value]="c.deviceId"
@@ -22,13 +22,13 @@
     (event)="onEvent($event)"
   ></ngx-scanner-qrcode>
   <div class="feature-button">
-    <button
+    <!-- <button
       mat-icon-button
       (click)="action.isTorch = !action.isTorch; handle(action, 'torcher')"
       class="flash-button"
-      *ngIf="action.devices.value.length > 0"
+      *ngIf="!!action?.devices?.value?.length"
     >
       <mat-icon>{{ action.isTorch ? "flash_on" : "flash_off" }}</mat-icon>
-    </button>
+    </button> -->
   </div>
 </div>

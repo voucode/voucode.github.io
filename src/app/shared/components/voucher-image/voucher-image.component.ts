@@ -120,7 +120,7 @@ export class VoucherImageComponent implements OnInit, OnDestroy {
       if (!this.voucher.qrData) {
         this.voucher.qrData = `${this.voucher.id}`
       }
-    })
+    }, 0)
     setTimeout(() => {
       this.downloading = true
       const saveItem = document.getElementById(element?.id)

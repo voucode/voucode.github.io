@@ -1,4 +1,4 @@
-import { AfterViewChecked, ChangeDetectorRef, Component } from '@angular/core';
+import { AfterViewChecked, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -16,47 +16,87 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
   styleUrl: './customer.component.scss',
   imports: [MatFormFieldModule, FormsModule, MatInputModule, MatButtonModule, MatDialogModule, SharedModule, MatProgressSpinnerModule]
 })
-export class CustomerComponent implements AfterViewChecked {
+export class CustomerComponent implements OnInit {
   customer = <any>{}
   customers = <any>[]
-  customerBrandSetting = <any>{}
+  brandSetting = <any>{}
   loggedIn: boolean = false;
   googleFormsPath: any;
 
   constructor(
     private brandService: BrandService,
+    private masterDataService: MasterDataService,
     private cd: ChangeDetectorRef
   ) {
     this.loggedIn = !!localStorage.getItem('loggedIn')
   }
 
-  ngAfterViewChecked(): void {
-    if (!this.customerBrandSetting?.customerForms) {
-      this.getBrandSetting()
-    }
-    if (this.customerBrandSetting?.customerDatabase && this.customers?.length == 0) {
-      this.getCustomerList()
-    }
+  ngOnInit(): void {
+    this.fetchInitData()
   }
 
-  getBrandSetting() {
-    this.customerBrandSetting = this.brandService.brandSetting?.global
-    this.cd.detectChanges()
+  registrationTrigger = <any>{}
+  fetchInitData() {    
+    if (!this.registrationTrigger?.sheet) {
+      this.getMasterData()
+    }
+  }
+  users = <any>[]
+  getMasterData() {
+    this.masterDataService.fetchMasterData()
+      .subscribe((res: any) => {
+        if (res.status === 200) {
+          this.registrationTrigger = res.setting
+          if (this.users?.length === 0) {
+            if (this.registrationTrigger?.sheet) {
+              this.getRegisteredData()
+            }
+          }
+        }
+      })
+  }
+
+  getRegisteredData() {
+    this.brandService.fetchRegisteredData(this.registrationTrigger?.sheet)
+      .subscribe((res: any) => {        
+        if (res.status === 200) {
+          this.users = res.data
+          this.getCurrentBrand()
+        }
+      })
+  }
+  loggedInBrand = <any>{}
+  brandSheet: any;
+
+  getCurrentBrand() {
+    let loggedIn = JSON.parse(localStorage.getItem('loggedIn') || '{}')
+    if (loggedIn?.brand) {
+      this.brandSheet = this.users?.find((item: any) => item.brand?.trim() == loggedIn?.brand?.trim())?.brandDatabase
+      if (this.brandSheet) {
+        this.brandService.fetchBrandData(this.brandSheet)
+          .subscribe((res: any) => {            
+            if (res.status === 200) {              
+              this.brandSetting = this.brandService.brandSetting?.global
+              this.getCustomerList()
+            }
+          })
+      }
+    }
   }
 
   onConfirmCreateCustomer() {
     this.googleFormsPath = ''
-    if (this.customerBrandSetting?.customerForms) {
-      if (this.customerBrandSetting?.customerForms?.includes('http')) {
-        this.customerBrandSetting.customerForms = this.customerBrandSetting.customerForms?.split('e/')[1]?.split('/')[0]
+    if (this.brandSetting?.customerForms) {
+      if (this.brandSetting?.customerForms?.includes('http')) {
+        this.brandSetting.customerForms = this.brandSetting.customerForms?.split('e/')[1]?.split('/')[0]
       }
-      this.googleFormsPath = `https://docs.google.com/forms/d/e/${this.customerBrandSetting?.customerForms}/viewform`
+      this.googleFormsPath = `https://docs.google.com/forms/d/e/${this.brandSetting?.customerForms}/viewform`
       Object.keys(this.brandService.brandSetting?.customerDatabase)
         ?.filter((item: any) => item !== 'googleFormsId')
         ?.forEach((k: any, index) => {
           if (this.customer[k]) {
             if (k == 'id') {
-              this.googleFormsPath += `${index === 0 ? '?' : '&'}${this.brandService.brandSetting?.customerDatabase[k]}=${this.customerBrandSetting?.id}-${encodeURIComponent(this.customer[k])}`
+              this.googleFormsPath += `${index === 0 ? '?' : '&'}${this.brandService.brandSetting?.customerDatabase[k]}=${this.brandSetting?.id}-${encodeURIComponent(this.customer[k])}`
             } else {
               this.googleFormsPath += `${index === 0 ? '?' : '&'}${this.brandService.brandSetting?.customerDatabase[k]}=${encodeURIComponent(this.customer[k])}`
             }
@@ -66,11 +106,17 @@ export class CustomerComponent implements AfterViewChecked {
   }
 
   getCustomerList() {
-    this.brandService.getCustomerList(this.customerBrandSetting?.customerDatabase)?.subscribe((res: any) => {
-      if (res.code === 200) {
-        this.customers = res.data
+    if (this.brandSetting?.customerDatabase) {
+      try {
+        this.brandService.getCustomerList(this.brandSetting?.customerDatabase)?.subscribe((res: any) => {          
+          if (res.status === 200) {            
+            this.customers = res.data
+          }
+        })
+      } catch (e) {
+        console.error(e);
       }
-    })
+    }
   }
 
   onPress(evt: any) {

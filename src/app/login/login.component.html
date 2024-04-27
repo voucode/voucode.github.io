@@ -20,6 +20,9 @@
             <mat-label>Mật khẩu</mat-label>
             <input type="password" [disabled]="users?.length == 0" matInput required [(ngModel)]="login.password" />
         </mat-form-field>
+        @if (errorMessage) {
+            <div class="text-[red] mb-4">{{errorMessage}}</div>
+        }
         <div class="text-center">
             <button [disabled]="
             !login.userName" mat-flat-button [color]="'primary'" (click)="onLogin()">ĐĂNG NHẬP</button>

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
+import { AfterViewChecked, AfterViewInit, ChangeDetectorRef, Component, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core';
 import { ScannerQRCodeConfig, ScannerQRCodeSelectedFiles, NgxScannerQrcodeComponent, NgxScannerQrcodeService, ScannerQRCodeResult } from 'ngx-scanner-qrcode';
 import { delay } from 'rxjs';
 
@@ -7,7 +7,7 @@ import { delay } from 'rxjs';
   templateUrl: './cp-qr-scanner.component.html',
   styleUrls: ['./cp-qr-scanner.component.scss']
 })
-export class CpQrScannerComponent implements AfterViewInit, OnDestroy {
+export class CpQrScannerComponent implements AfterViewInit, OnDestroy, AfterViewChecked {
 
   @Output() qrData = new EventEmitter<any>();
 
@@ -33,13 +33,23 @@ export class CpQrScannerComponent implements AfterViewInit, OnDestroy {
   @ViewChild('action') action: NgxScannerQrcodeComponent;
   currentDevice: any;
 
-  constructor(private qrcode: NgxScannerQrcodeService) { }
+  constructor(private cd: ChangeDetectorRef) { }
 
   ngAfterViewInit(): void {
-    this.action.stop()
-    this.action.isReady.pipe(delay(3000)).subscribe(() => {
+    this.action?.stop()
+    this.action?.isReady?.pipe(delay(3000)).subscribe(() => {
       this.action?.start();
     });
+
+  }
+
+  ngAfterViewChecked(): void {
+    if (!this.currentDevice) {
+      if (this.action.devices.value[this.action?.devices?.value?.length - 1]) {
+        this.currentDevice = this.action.devices.value[this.action?.devices?.value?.length - 1]['deviceId']
+        this.cd.detectChanges()
+      }
+    }
   }
 
   ngOnDestroy(): void {

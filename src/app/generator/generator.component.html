@@ -1,7 +1,7 @@
 <div class="p-3">
     @if (loggedIn) {
     <h1 class="text-4xl mb-4">Tạo khuyến mãi</h1>
-    @if (generatorBrandSetting?.voucherForms) {
+    @if (brandSetting?.voucherForms) {
     <mat-expansion-panel [expanded]="true">
         <mat-expansion-panel-header>
             <mat-panel-title>Thông tin chung</mat-panel-title>
@@ -11,7 +11,7 @@
             <mat-label>Mã khuyến mãi</mat-label>
             <input type="text" matInput required [(ngModel)]="voucher.id" (keypress)="onPress($event)"
                 (ngModelChange)="voucher.qrData = voucher.id" />
-            <span matTextPrefix>{{generatorBrandSetting?.id}}-</span>
+            <span matTextPrefix>{{brandSetting?.id}}-</span>
         </mat-form-field>
         <mat-form-field class="w-full lg:w-1/2">
             <mat-label>Tên gọi khuyến mãi</mat-label>
@@ -105,12 +105,13 @@
             (uploadTick)="uploadTick($event?.event, $event.item)"></app-voucher-image>
 
         <div class="text-center">
-            <button mat-raised-button color="primary" (click)="saveData()" [disabled]="downloading" class="w-full">
+            <button mat-raised-button color="primary" (click)="saveData()"
+                [disabled]="downloading || !voucher.id || !voucher.name" class="w-full mt-6">
                 <mat-icon>save</mat-icon> Lưu Dữ Liệu Mẫu Khuyến Mãi
             </button>
         </div>
         @if (googleFormsPath) {
-        <button class="w-full" mat-stroked-button [color]="'primary'" (click)="googleFormsPath = ''">Đóng biểu
+        <button class="w-full mt-6" mat-stroked-button [color]="'primary'" (click)="googleFormsPath = ''">Đóng biểu
             mẫu</button>
         <div><strong class="text-[red]">LƯU Ý:</strong> Hãy Ấn nút "Gửi" hoặc "Submit" trong Biễu Mẫu bên dưới 👇👇👇
             thì bạn mới hoàn thành việc đăng ký nhé!</div>

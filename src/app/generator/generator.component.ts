@@ -15,6 +15,7 @@ import { QRCodeModule } from 'angularx-qrcode';
 import { BrandService } from '../shared/services/brand/brand.service';
 import { SharedModule } from "../shared/shared.module";
 import { VoucherImageComponent } from "../shared/components/voucher-image/voucher-image.component";
+import { MasterDataService } from '../shared/services/masterData/master-data.service';
 
 @Component({
     selector: 'app-generator',
@@ -23,7 +24,7 @@ import { VoucherImageComponent } from "../shared/components/voucher-image/vouche
     styleUrl: './generator.component.scss',
     imports: [MatFormFieldModule, MatDividerModule, MatProgressSpinnerModule, MatExpansionModule, FormsModule, MatIconModule, MatInputModule, MatButtonModule, DragDropModule, DecimalPipe, QRCodeModule, SharedModule, VoucherImageComponent]
 })
-export class GeneratorComponent implements OnInit, AfterViewChecked {
+export class GeneratorComponent implements OnInit {
 
   @ViewChild('voucherContainer') voucherContainer!: ElementRef;
   @ViewChild('previewVoucher') previewVoucher!: ElementRef;
@@ -38,30 +39,69 @@ export class GeneratorComponent implements OnInit, AfterViewChecked {
   downloading: boolean = false
   googleFormsPath: any = ''
   googleFormsEntry = <any>[]
-  generatorBrandSetting = <any>{}
+  brandSetting = <any>{}
 
   constructor(
     private cd: ChangeDetectorRef,
     private captureService: NgxCaptureService,
-    private brandService: BrandService
+    private brandService: BrandService,
+    private masterDataService: MasterDataService,
   ) {
     this.loggedIn = !!localStorage.getItem('loggedIn')
   }
 
   ngOnInit(): void {
     this.updateQrPosition()
-  }
-
-  ngAfterViewChecked(): void {
-    if (!this.generatorBrandSetting?.voucherForms) {
-      this.getGeneratorBrandSetting()
+    if (!this.brandSetting?.voucherForms) {
+      this.fetchInitData()
     }
   }
 
-  getGeneratorBrandSetting() {
-    this.generatorBrandSetting = this.brandService.brandSetting.global
-    this.cd.detectChanges()
+  registrationTrigger = <any>{}
+  fetchInitData() {    
+    if (!this.registrationTrigger?.sheet) {
+      this.getMasterData()
+    }
+  }
+  users = <any>[]
+  getMasterData() {
+    this.masterDataService.fetchMasterData()
+      .subscribe((res: any) => {
+        if (res.status === 200) {
+          this.registrationTrigger = res.setting
+          if (this.users?.length === 0) {
+            if (this.registrationTrigger?.sheet) {
+              this.getRegisteredData()
+            }
+          }
+        }
+      })
+  }
 
+  getRegisteredData() {
+    this.brandService.fetchRegisteredData(this.registrationTrigger?.sheet)
+      .subscribe((res: any) => {
+        if (res.status === 200) {
+          this.users = res.data
+          this.getCurrentBrand()
+        }
+      })
+  }
+  brandSheet: any;
+  loggedInBrand = <any>{}
+  getCurrentBrand() {
+    let loggedIn = JSON.parse(localStorage.getItem('loggedIn') || '{}')
+    if (loggedIn?.brand) {
+      this.brandSheet = this.users?.find((item: any) => item.brand?.trim() == loggedIn?.brand?.trim())?.brandDatabase
+      if (this.brandSheet) {
+        this.brandService.fetchBrandData(this.brandSheet)
+          .subscribe((res: any) => {
+            if (res.status === 200) {              
+              this.brandSetting = this.brandService.brandSetting?.global
+            }
+          })
+      }
+    }
   }
 
   updateQr() {
@@ -150,18 +190,18 @@ export class GeneratorComponent implements OnInit, AfterViewChecked {
   }
 
   saveData() {
-    if (this.generatorBrandSetting?.voucherForms) {
-      if (this.generatorBrandSetting?.voucherForms?.includes('http')) {
-        this.generatorBrandSetting.voucherForms = this.generatorBrandSetting?.voucherForms?.split('e/')[1]?.split('/')[0]
+    if (this.brandSetting?.voucherForms) {
+      if (this.brandSetting?.voucherForms?.includes('http')) {
+        this.brandSetting.voucherForms = this.brandSetting?.voucherForms?.split('e/')[1]?.split('/')[0]
       }
-      this.googleFormsPath = `https://docs.google.com/forms/d/e/${this.generatorBrandSetting?.voucherForms}/viewform`
+      this.googleFormsPath = `https://docs.google.com/forms/d/e/${this.brandSetting?.voucherForms}/viewform`
 
       Object.keys(this.brandService.brandSetting?.voucherDatabase)
         ?.filter((item: any) => item !== 'googleFormsId')
         ?.forEach((k: any, index) => {
           if (k == 'id') {
             if (this.voucher[k]) {
-              this.googleFormsPath += `${index === 0 ? '?' : '&'}${this.brandService.brandSetting?.voucherDatabase[k]}=${this.generatorBrandSetting?.id}-${encodeURIComponent(this.voucher[k])}`
+              this.googleFormsPath += `${index === 0 ? '?' : '&'}${this.brandService.brandSetting?.voucherDatabase[k]}=${this.brandSetting?.id}-${encodeURIComponent(this.voucher[k])}`
             }
           } else {
             if (k == 'ticks') {

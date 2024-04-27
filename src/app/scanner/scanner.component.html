@@ -3,7 +3,11 @@
     ? 'Ẩn' : 'Hiện'}}
     máy quét</button>
 <div class="w-full h-full flex items-center flex-col">
-    @if (isShowScanner) {
+    @if (loading) {
+    <mat-spinner></mat-spinner>
+    Đang chuẩn bị dữ liệu
+    }
+    @if (isShowScanner && !loading) {
     <div class="w-full lg:w-1/2">
         <cp-qr-scanner (qrData)="scanComplete($event)"></cp-qr-scanner>
     </div>
@@ -71,8 +75,8 @@
         </div>
         }
         }
-        @if (promotion?.foundData?.length > 0) {
-        <button mat-flat-button [color]="'primary'" class="w-full" (click)="updatePath()">Cập nhật</button>
+        @if (promotion?.foundData?.length > 0 && isShowUpdateAction) {
+        <button mat-flat-button [color]="'primary'" class="w-full my-6" (click)="updatePath()">Cập nhật</button>
         @if (googleFormsPath) {
         <button class="w-full" mat-stroked-button [color]="'primary'" (click)="googleFormsPath = ''">Đóng biểu
             mẫu</button>

@@ -10,6 +10,7 @@ import { SharedModule } from '../shared/shared.module';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { VoucherImageComponent } from "../shared/components/voucher-image/voucher-image.component";
+import { MasterDataService } from '../shared/services/masterData/master-data.service';
 
 @Component({
   selector: 'app-voucher',
@@ -18,9 +19,8 @@ import { VoucherImageComponent } from "../shared/components/voucher-image/vouche
   styleUrl: './voucher.component.scss',
   imports: [MatSelectModule, MatFormFieldModule, FormsModule, MatInputModule, MatButtonModule, MatDialogModule, SharedModule, MatProgressSpinnerModule, MatProgressBarModule, VoucherImageComponent]
 })
-export class VoucherComponent implements AfterViewChecked, OnInit {
+export class VoucherComponent implements OnInit {
 
-  customerBrandSetting = <any>{}
   voucher = <any>{
     voucher: <any>{}
   }
@@ -28,15 +28,15 @@ export class VoucherComponent implements AfterViewChecked, OnInit {
   googleFormsPath: any;
   customers = <any>[]
   vouchers = <any>[]
-
+  brandSetting = <any>{}
   constructor(
     private brandService: BrandService,
+    private masterDataService: MasterDataService,
     private cd: ChangeDetectorRef
   ) {
   }
 
   ngOnInit(): void {
-    this.customerBrandSetting = <any>{}
     this.voucher = <any>{
       voucher: <any>{}
     }
@@ -48,35 +48,80 @@ export class VoucherComponent implements AfterViewChecked, OnInit {
     this.fetchInitData()
   }
 
-  ngAfterViewChecked(): void {
-    this.fetchInitData()
-  }
-
-  fetchInitData() {
-    if (!this.customerBrandSetting?.customerForms) {
-      this.getBrandSetting()
-    }
-    if (this.customerBrandSetting?.customerForms) {
-      if (this.customers?.length == 0) {
-        this.getCustomerList()
-      }
-      if (this.vouchers?.length == 0) {
-        this.getVoucherList()
-      }
+  registrationTrigger = <any>{}
+  fetchInitData() {    
+    if (!this.registrationTrigger?.sheet) {
+      this.getMasterData()
     }
   }
+  users = <any>[]
+  getMasterData() {
+    this.masterDataService.fetchMasterData()
+      .subscribe((res: any) => {
+        if (res.status === 200) {
+          this.registrationTrigger = res.setting
+          if (this.users?.length === 0) {
+            if (this.registrationTrigger?.sheet) {
+              this.getRegisteredData()
+            }
+          }
+        }
+      })
+  }
 
-  getBrandSetting() {
-    this.customerBrandSetting = this.brandService.brandSetting?.global
-    this.cd.detectChanges()
+  getRegisteredData() {
+    this.brandService.fetchRegisteredData(this.registrationTrigger?.sheet)
+      .subscribe((res: any) => {
+        if (res.status === 200) {
+          this.users = res.data
+          this.getCurrentBrand()
+        }
+      })
+  }
+  brandSheet: any;
+  loggedInBrand = <any>{}
+
+  getCurrentBrand() {
+    let loggedIn = JSON.parse(localStorage.getItem('loggedIn') || '{}')
+    if (loggedIn?.brand) {
+      this.brandSheet = this.users?.find((item: any) => item.brand?.trim() == loggedIn?.brand?.trim())?.brandDatabase
+      if (this.brandSheet) {
+        this.brandService.fetchBrandData(this.brandSheet)
+          .subscribe((res: any) => {
+            if (res.status === 200) {              
+              this.brandSetting = this.brandService.brandSetting?.global
+              this.getVoucherList()
+              loggedIn.trigger = this.loggedInBrand?.trigger
+              localStorage.setItem('loggedIn', JSON.stringify(loggedIn))
+            }
+          })
+      }
+    }
+  }
+  customerVouchers = <any>[];
+  getCustomerVoucherList() {
+    this.brandService.getCustomerVoucherList(this.brandSetting?.customerVoucherDatabase)?.subscribe((res: any) => {
+      if (res.status === 200) {
+        this.customerVouchers = res.data
+        this.customerVouchers?.forEach((item: any) => {
+          item.voucher = this.vouchers?.find((v: any) => v?.id === item?.voucherId)
+          item.customer = this.customers?.find((v: any) => v?.id === item?.customerId)
+        })
+        this.customerVouchers = this.customerVouchers?.filter((item: any) => {
+          return item?.action === 'add'
+        })
+        this.cd.detectChanges()
+      }
+    })
   }
 
   getCustomerList() {
-    if (this.customerBrandSetting?.customerDatabase) {
+    if (this.brandSetting?.customerDatabase) {
       try {
-        this.brandService.getCustomerList(this.customerBrandSetting?.customerDatabase)?.subscribe((res: any) => {
-          if (res.code === 200) {
+        this.brandService.getCustomerList(this.brandSetting?.customerDatabase)?.subscribe((res: any) => {
+          if (res.status === 200) {
             this.customers = res.data
+            this.getCustomerVoucherList()
           }
         })
       } catch (e) {
@@ -86,11 +131,12 @@ export class VoucherComponent implements AfterViewChecked, OnInit {
   }
 
   getVoucherList() {
-    if (this.customerBrandSetting?.voucherDatabase) {
+    if (this.brandSetting?.voucherDatabase) {
       try {
-        this.brandService.getVoucherList(this.customerBrandSetting?.voucherDatabase)?.subscribe((res: any) => {
-          if (res.code === 200) {
+        this.brandService.getVoucherList(this.brandSetting?.voucherDatabase)?.subscribe((res: any) => {
+          if (res.status === 200) {
             this.vouchers = res.data
+            this.getCustomerList()
           }
         })
       } catch (e) {
@@ -118,9 +164,9 @@ export class VoucherComponent implements AfterViewChecked, OnInit {
   }
 
   onConfirmCreateVoucher() {
-    if (this.customerBrandSetting?.customerVoucherForms?.includes('http')) {
-      this.customerBrandSetting.customerVoucherForms = this.customerBrandSetting?.customerVoucherForms?.split('e/')[1]?.split('/')[0]
+    if (this.brandSetting?.customerVoucherForms?.includes('http')) {
+      this.brandSetting.customerVoucherForms = this.brandSetting?.customerVoucherForms?.split('e/')[1]?.split('/')[0]
     }
-    this.googleFormsPath = `https://docs.google.com/forms/d/e/${this.customerBrandSetting?.customerVoucherForms}/viewform?${this.brandService.brandSetting?.customerVoucherDatabase?.voucherId}=${encodeURIComponent(this.voucher.voucherId)}&${this.brandService.brandSetting?.customerVoucherDatabase?.customerId}=${encodeURIComponent(this.voucher.customerId)}&${this.brandService.brandSetting?.customerVoucherDatabase?.action}=add`
+    this.googleFormsPath = `https://docs.google.com/forms/d/e/${this.brandSetting?.customerVoucherForms}/viewform?${this.brandService.brandSetting?.customerVoucherDatabase?.voucherId}=${encodeURIComponent(this.voucher.voucherId)}&${this.brandService.brandSetting?.customerVoucherDatabase?.customerId}=${encodeURIComponent(this.voucher.customerId)}&${this.brandService.brandSetting?.customerVoucherDatabase?.action}=add`
   }
 }

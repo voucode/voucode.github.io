@@ -23,8 +23,8 @@
             </div>
         </button>
     </div>
-    <div #voucherContainer class="min-h-96 w-fit border relative z-10 select-none origin-top-left"
-        [id]="'voucherContainerId'" [style]="{
+    <div #voucherContainer class="min-h-96 w-full border relative z-10 select-none origin-top-left"
+        [class]="{'!w-fit': voucher?.backgroundImage}" [id]="'voucherContainerId'" [style]="{
             height: voucher.height ? (voucher.height + 'px') : '',
             width: voucher.width ? (voucher.width + 'px') : '',
             transform: voucher.scale ? 'scale(' + voucher.scale + ')' : '',

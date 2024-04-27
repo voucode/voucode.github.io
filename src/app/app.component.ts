@@ -1,4 +1,4 @@
-import { AfterViewChecked, ChangeDetectorRef, Component } from '@angular/core';
+import { AfterViewChecked, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { RouterModule, RouterOutlet } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
@@ -17,7 +17,7 @@ import { BrandService } from './shared/services/brand/brand.service';
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
-export class AppComponent implements AfterViewChecked {
+export class AppComponent implements OnInit {
   title = 'vocode';
   sideNavMode: any = 'side';
   isShowNavBar: boolean = true
@@ -42,18 +42,9 @@ export class AppComponent implements AfterViewChecked {
     this.loggedIn = !!JSON.parse(localStorage.getItem('loggedIn') || '{}')?.userName
   }
 
-  ngAfterViewChecked(): void {
+  ngOnInit(): void {
     if (!this.registrationTrigger?.sheet) {
       this.getMasterData()
-    }
-    if (this.users?.length === 0) {
-      if (this.registrationTrigger?.sheet) {
-        this.brandService.fetchRegisteredData(this.registrationTrigger?.sheet)
-        this.getRegisteredData()
-      }
-    }
-    if (!this.brandService?.brandSetting?.global?.id) {
-      this.getCurrentBrand()
     }
   }
 
@@ -63,28 +54,25 @@ export class AppComponent implements AfterViewChecked {
   }
 
   getMasterData() {
-    this.masterDataService.getMasterData()
+    this.masterDataService.fetchMasterData()
       .subscribe((res: any) => {
-        if (res.code === 200) {
-          const registrationData = res.data?.filter((item: any) => item?.base == "registration")
-          if (registrationData?.length > 0) {
-            registrationData?.forEach((item: any) => {
-              if (item?.trigger) {
-                this.registrationTrigger[item?.field] = item?.trigger
-              }
-            })
+        if (res.status === 200) {
+          this.registrationTrigger = res.setting
+          if (this.users?.length === 0) {
+            if (this.registrationTrigger?.sheet) {
+              this.getRegisteredData()
+            }
           }
         }
       })
   }
 
   getRegisteredData() {
-    this.brandService.getRegisteredData()
+    this.brandService.fetchRegisteredData(this.registrationTrigger?.sheet)
       .subscribe((res: any) => {
-        if (res.code === 200) {
+        if (res.status === 200) {
           this.users = res.data
           this.getCurrentBrand()
-          this.cd.detectChanges()
         }
       })
   }
@@ -92,23 +80,12 @@ export class AppComponent implements AfterViewChecked {
   getCurrentBrand() {
     let loggedIn = JSON.parse(localStorage.getItem('loggedIn') || '{}')
     if (loggedIn?.brand) {
-      this.brandSheet = this.users?.find((item: any) => item.brand == loggedIn?.brand)?.brandDatabase
+      this.brandSheet = this.users?.find((item: any) => item.brand?.trim() == loggedIn?.brand?.trim())?.brandDatabase
       if (this.brandSheet) {
         this.brandService.fetchBrandData(this.brandSheet)
           .subscribe((res: any) => {
-            if (res.code === 200) {
-              const baseList = [...new Set(res?.data?.map((item: any) => item?.base))]
-              baseList?.forEach((item: any) => {
-                if (!this.brandService.brandSetting[item]) {
-                  this.brandService.brandSetting[item] = <any>{}
-                }
-                res.data?.filter((row: any) => row?.base == item)?.forEach((row: any) => {
-                  this.brandService.brandSetting[item][row?.field] = row?.trigger
-                })
-              })
+            if (res.status === 200) {              
               this.brandSetting = this.brandService.brandSetting?.global
-              // console.log(this.brandSetting);
-
               loggedIn.trigger = this.loggedInBrand?.trigger
               localStorage.setItem('loggedIn', JSON.stringify(loggedIn))
             }

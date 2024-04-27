@@ -14,7 +14,7 @@ import { SharedModule } from '../shared/shared.module';
   templateUrl: './register.component.html',
   styleUrl: './register.component.scss'
 })
-export class RegisterComponent implements OnInit, AfterViewChecked {
+export class RegisterComponent implements OnInit {
 
   registrationInfor = <any>{}
   googleFormsPath: any = ''
@@ -25,27 +25,16 @@ export class RegisterComponent implements OnInit, AfterViewChecked {
   }
 
   ngOnInit(): void {
-
-  }
-
-  ngAfterViewChecked(): void {
     if (!this.registrationTrigger?.googleFormsId) {
       this.getMasterData()
     }
   }
 
   getMasterData() {
-    this.masterDataService.getMasterData()
+    this.masterDataService.fetchMasterData()
       .subscribe((res: any) => {
-        if (res.code === 200) {
-          const registrationData = res.data?.filter((item: any) => item?.base == "registration")
-          if (registrationData?.length > 0) {
-            registrationData?.forEach((item: any) => {
-              if (item?.trigger) {
-                this.registrationTrigger[item?.field] = item?.trigger
-              }
-            })
-          }
+        if (res.status === 200) {
+          this.registrationTrigger = res.setting
         }
       })
   }
