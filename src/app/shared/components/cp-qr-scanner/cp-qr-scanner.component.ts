@@ -37,9 +37,9 @@ export class CpQrScannerComponent implements AfterViewInit, OnDestroy, AfterView
 
   ngAfterViewInit(): void {
     this.action?.stop()
-    this.action?.isReady?.pipe(delay(3000)).subscribe(() => {
-      this.action?.start();
-    });
+    this.action?.start();
+    // this.action?.isReady?.pipe(delay(3000)).subscribe(() => {
+    // });
 
   }
 
@@ -61,9 +61,7 @@ export class CpQrScannerComponent implements AfterViewInit, OnDestroy, AfterView
     console.log(e);
     if (e[0]?.value) {
       this.qrData.emit(e[0].value)
-      this.action.pause().pipe(delay(3000)).subscribe(() => {
-        this.action.play()
-      })
+      this.action.play()
     }
   }
 

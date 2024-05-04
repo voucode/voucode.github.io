@@ -7,6 +7,9 @@
     <mat-spinner></mat-spinner>
     Đang chuẩn bị dữ liệu
     }
+    @if (customerVouchers?.length > 0) {
+    <div>Xác nhận {{customerVouchers?.length | number: '2.0-0'}}</div>
+    }
     @if (isShowScanner && !loading) {
     <div class="w-full lg:w-1/2">
         <cp-qr-scanner (qrData)="scanComplete($event)"></cp-qr-scanner>

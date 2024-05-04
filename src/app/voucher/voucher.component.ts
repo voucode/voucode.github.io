@@ -49,7 +49,7 @@ export class VoucherComponent implements OnInit {
   }
 
   registrationTrigger = <any>{}
-  fetchInitData() {    
+  fetchInitData() {
     if (!this.registrationTrigger?.sheet) {
       this.getMasterData()
     }
@@ -84,66 +84,35 @@ export class VoucherComponent implements OnInit {
   getCurrentBrand() {
     let loggedIn = JSON.parse(localStorage.getItem('loggedIn') || '{}')
     if (loggedIn?.brand) {
-      this.brandSheet = this.users?.find((item: any) => item.brand?.trim() == loggedIn?.brand?.trim())?.brandDatabase
-      if (this.brandSheet) {
-        this.brandService.fetchBrandData(this.brandSheet)
-          .subscribe((res: any) => {
-            if (res.status === 200) {              
-              this.brandSetting = this.brandService.brandSetting?.global
-              this.getVoucherList()
-              loggedIn.trigger = this.loggedInBrand?.trigger
-              localStorage.setItem('loggedIn', JSON.stringify(loggedIn))
-            }
-          })
+      if (!this.brandSetting?.global) {
+        this.brandSheet = this.users?.find((item: any) => item.brand?.trim() == loggedIn?.brand?.trim())?.brandDatabase
+        if (this.brandSheet) {
+          this.brandService.fetchBrandData(this.brandSheet)
+            .subscribe((res: any) => {
+              if (res.status === 200) {
+                this.customerVouchers = res.customerVouchers
+                this.customers = res.customers
+                this.vouchers = res.vouchers
+                this.customerVouchers = this.customerVouchers?.filter((item: any) => item?.action === 'add')
+                this.customerVouchers?.forEach((item: any) => {
+                  item.voucher = this.vouchers?.find((v: any) => v.id === item?.voucherId)
+                  item.customer = this.customers?.find((v: any) => v.id === item?.customerId)
+                })
+                this.brandSetting = res.setting
+                loggedIn.trigger = this.loggedInBrand?.trigger
+                localStorage.setItem('loggedIn', JSON.stringify(loggedIn))
+              }
+            })
+        }
+      } else {
+        this.brandSetting = this.brandService.brandSetting
+        this.customerVouchers = this.brandService.customerVoucherData
+        this.customers = this.brandService.customerData
+        this.vouchers = this.brandService.voucherData
       }
     }
   }
   customerVouchers = <any>[];
-  getCustomerVoucherList() {
-    this.brandService.getCustomerVoucherList(this.brandSetting?.customerVoucherDatabase)?.subscribe((res: any) => {
-      if (res.status === 200) {
-        this.customerVouchers = res.data
-        this.customerVouchers?.forEach((item: any) => {
-          item.voucher = this.vouchers?.find((v: any) => v?.id === item?.voucherId)
-          item.customer = this.customers?.find((v: any) => v?.id === item?.customerId)
-        })
-        this.customerVouchers = this.customerVouchers?.filter((item: any) => {
-          return item?.action === 'add'
-        })
-        this.cd.detectChanges()
-      }
-    })
-  }
-
-  getCustomerList() {
-    if (this.brandSetting?.customerDatabase) {
-      try {
-        this.brandService.getCustomerList(this.brandSetting?.customerDatabase)?.subscribe((res: any) => {
-          if (res.status === 200) {
-            this.customers = res.data
-            this.getCustomerVoucherList()
-          }
-        })
-      } catch (e) {
-        console.error(e);
-      }
-    }
-  }
-
-  getVoucherList() {
-    if (this.brandSetting?.voucherDatabase) {
-      try {
-        this.brandService.getVoucherList(this.brandSetting?.voucherDatabase)?.subscribe((res: any) => {
-          if (res.status === 200) {
-            this.vouchers = res.data
-            this.getCustomerList()
-          }
-        })
-      } catch (e) {
-        console.error(e);
-      }
-    }
-  }
 
   updateValue() {
     if (this.voucher.voucher) {
@@ -164,9 +133,9 @@ export class VoucherComponent implements OnInit {
   }
 
   onConfirmCreateVoucher() {
-    if (this.brandSetting?.customerVoucherForms?.includes('http')) {
-      this.brandSetting.customerVoucherForms = this.brandSetting?.customerVoucherForms?.split('e/')[1]?.split('/')[0]
+    if (this.brandSetting?.global?.customerVoucherForms?.includes('http')) {
+      this.brandSetting.global.customerVoucherForms = this.brandSetting?.global?.customerVoucherForms?.split('e/')[1]?.split('/')[0]
     }
-    this.googleFormsPath = `https://docs.google.com/forms/d/e/${this.brandSetting?.customerVoucherForms}/viewform?${this.brandService.brandSetting?.customerVoucherDatabase?.voucherId}=${encodeURIComponent(this.voucher.voucherId)}&${this.brandService.brandSetting?.customerVoucherDatabase?.customerId}=${encodeURIComponent(this.voucher.customerId)}&${this.brandService.brandSetting?.customerVoucherDatabase?.action}=add`
+    this.googleFormsPath = `https://docs.google.com/forms/d/e/${this.brandSetting?.global?.customerVoucherForms}/viewform?${this.brandService.brandSetting?.customerVoucherDatabase?.voucherId}=${encodeURIComponent(this.voucher.voucherId)}&${this.brandService.brandSetting?.customerVoucherDatabase?.customerId}=${encodeURIComponent(this.voucher.customerId)}&${this.brandService.brandSetting?.customerVoucherDatabase?.action}=add`
   }
 }

@@ -14,14 +14,16 @@
         }
         <mat-form-field class="w-full">
             <mat-label>Tên người dùng</mat-label>
-            <input type="text" [disabled]="users?.length == 0" matInput required [(ngModel)]="login.userName" />
+            <input type="text" [disabled]="users?.length == 0" matInput required [(ngModel)]="login.userName"
+                (keyup.enter)="login?.userName && login?.password ? onLogin() : ''" />
         </mat-form-field>
         <mat-form-field class="w-full">
             <mat-label>Mật khẩu</mat-label>
-            <input type="password" [disabled]="users?.length == 0" matInput required [(ngModel)]="login.password" />
+            <input type="password" [disabled]="users?.length == 0" matInput required [(ngModel)]="login.password"
+                (keyup.enter)="login?.userName && login?.password ? onLogin() : ''" />
         </mat-form-field>
         @if (errorMessage) {
-            <div class="text-[red] mb-4">{{errorMessage}}</div>
+        <div class="text-[red] mb-4">{{errorMessage}}</div>
         }
         <div class="text-center">
             <button [disabled]="

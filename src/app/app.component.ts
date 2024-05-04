@@ -22,6 +22,7 @@ export class AppComponent implements OnInit {
   sideNavMode: any = 'side';
   isShowNavBar: boolean = true
   loggedIn: boolean = false
+  isToggle: boolean = false
   registrationTrigger = <any>{}
   loggedInBrand = <any>{}
   brandSetting = <any>{}
@@ -38,6 +39,7 @@ export class AppComponent implements OnInit {
       .observe(['(max-width: 600px)'])
       .subscribe((state: BreakpointState) => {
         this.isShowNavBar = !state.matches;
+        this.isToggle = state.matches;
       });
     this.loggedIn = !!JSON.parse(localStorage.getItem('loggedIn') || '{}')?.userName
   }
@@ -76,20 +78,24 @@ export class AppComponent implements OnInit {
         }
       })
   }
-
+  
   getCurrentBrand() {
     let loggedIn = JSON.parse(localStorage.getItem('loggedIn') || '{}')
     if (loggedIn?.brand) {
-      this.brandSheet = this.users?.find((item: any) => item.brand?.trim() == loggedIn?.brand?.trim())?.brandDatabase
-      if (this.brandSheet) {
-        this.brandService.fetchBrandData(this.brandSheet)
-          .subscribe((res: any) => {
-            if (res.status === 200) {              
-              this.brandSetting = this.brandService.brandSetting?.global
-              loggedIn.trigger = this.loggedInBrand?.trigger
-              localStorage.setItem('loggedIn', JSON.stringify(loggedIn))
-            }
-          })
+      if (!this.brandSetting?.global) {
+        this.brandSheet = this.users?.find((item: any) => item.brand?.trim() == loggedIn?.brand?.trim())?.brandDatabase
+        if (this.brandSheet) {
+          this.brandService.fetchBrandData(this.brandSheet)
+            .subscribe((res: any) => {
+              if (res.status === 200) {
+                this.brandSetting = res.setting
+                loggedIn.trigger = this.loggedInBrand?.trigger
+                localStorage.setItem('loggedIn', JSON.stringify(loggedIn))
+              }
+            })
+        }
+      } else {
+        this.brandSetting = this.brandService.brandSetting
       }
     }
   }

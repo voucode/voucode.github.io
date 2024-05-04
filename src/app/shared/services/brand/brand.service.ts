@@ -33,8 +33,8 @@ export class BrandService {
     return new Observable((observable) => {
       const returnData = () => {
         let response = <any>{}
-        this.sheetService.decodeRawSheetData(ref.brandWorkbook.Sheets['Sheet1'])
-          .subscribe((res: any) => {            
+        this.sheetService.decodeRawSheetData(ref.brandWorkbook.Sheets['setting'])
+          .subscribe((res: any) => {
             const setting = [...new Set(res?.map((item: any) => item?.base))]
             setting?.forEach((item: any) => {
               if (!this.brandSetting[item]) {
@@ -43,10 +43,28 @@ export class BrandService {
               res.filter((row: any) => row?.base == item)?.forEach((row: any) => {
                 this.brandSetting[item][row?.field] = row?.trigger
               })
-            })            
+            })
             if (setting?.length > 0) {
               response.status = 200;
               response.setting = this.brandSetting
+              this.sheetService.decodeRawSheetData(ref.brandWorkbook.Sheets['khach-hang'])
+                .subscribe((res: any) => {
+                  response.customers = res
+                  ref.customerData = res
+                })
+              this.sheetService.decodeRawSheetData(ref.brandWorkbook.Sheets['chuong-trinh'])
+                .subscribe((res: any) => {
+                  response.vouchers = res
+                  ref.voucherData = res
+                })
+              this.sheetService.decodeRawSheetData(ref.brandWorkbook.Sheets['phat-khuyen-mai'])
+                .subscribe((res: any) => {
+                  response.customerVouchers = res
+                  ref.customerVoucherData = res
+                })
+
+              observable.next(response)
+              observable.complete()
             } else {
               response.status = 400;
             }
@@ -100,123 +118,6 @@ export class BrandService {
               if (res.status == 200) {
                 if (res?.workbook) {
                   ref.registeredWorkbook = res?.workbook
-                  returnData()
-                }
-              }
-            })
-        } catch (e) {
-          console.error(e);
-        }
-      } else {
-        returnData()
-      }
-    })
-  }
-
-  getCustomerList(id: any): Observable<any> {
-    const ref: Mutable<this> = this;
-    return new Observable((observable) => {
-      const returnData = () => {
-        let response = <any>{}
-        this.sheetService.decodeRawSheetData(ref.customerWorkbook.Sheets['Form Responses 1'])
-          .subscribe((res: any) => {
-            const customers = res;
-            if (customers?.length > 0) {
-              response.status = 200;
-              response.data = customers
-              ref.customerData = customers
-            } else {
-              response.status = 400;
-            }
-            observable.next(response)
-            observable.complete()
-          })
-      }
-      if (!ref.customerWorkbook) {
-        try {
-          this.sheetService.fetchSheet(id)
-            .subscribe((res: any) => {
-              if (res.status == 200) {
-                if (res?.workbook) {
-                  ref.customerWorkbook = res?.workbook
-                  returnData()
-                }
-              }
-            })
-        } catch (e) {
-          console.error(e);
-        }
-      } else {
-        returnData()
-      }
-    })
-  }
-
-  getCustomerVoucherList(id: any): Observable<any> {
-    const ref: Mutable<this> = this;
-    return new Observable((observable) => {
-      const returnData = () => {
-        let response = <any>{}        
-        this.sheetService.decodeRawSheetData(ref.customerVoucherWorkbook.Sheets['Form Responses 1'])
-          .subscribe((res: any) => {
-            const data = res;
-            if (data?.length > 0) {
-              response.status = 200;
-              response.data = data
-              ref.customerVoucherData = data
-            } else {
-              response.status = 400;
-            }
-            observable.next(response)
-            observable.complete()
-          })
-      }
-      if (!ref.customerVoucherWorkbook) {
-        try {
-          this.sheetService.fetchSheet(id)
-            .subscribe((res: any) => {
-              if (res.status == 200) {
-                if (res?.workbook) {
-                  ref.customerVoucherWorkbook = res?.workbook
-                  returnData()
-                }
-              }
-            })
-        } catch (e) {
-          console.error(e);
-        }
-      } else {
-        returnData()
-      }
-    })
-  }
-
-  getVoucherList(id: any): Observable<any> {
-    const ref: Mutable<this> = this;
-    return new Observable((observable) => {
-      const returnData = () => {
-        let response = <any>{}        
-        this.sheetService.decodeRawSheetData(ref.voucherWorkbook.Sheets['Form Responses 1'])
-          .subscribe((res: any) => {
-            const data = res;
-            if (data?.length > 0) {
-              response.status = 200;
-              response.data = data
-              ref.voucherData = data
-            } else {
-              response.status = 400;
-            }
-            observable.next(response)
-            observable.complete()
-          })
-      }
-      if (!ref.voucherWorkbook) {
-        try {
-          this.sheetService.fetchSheet(id)
-            .subscribe((res: any) => {
-              if (res.status == 200) {
-                if (res?.workbook) {
-                  ref.voucherWorkbook = res?.workbook
                   returnData()
                 }
               }

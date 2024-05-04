@@ -67,55 +67,47 @@ export class CustomerComponent implements OnInit {
   }
   loggedInBrand = <any>{}
   brandSheet: any;
-
   getCurrentBrand() {
     let loggedIn = JSON.parse(localStorage.getItem('loggedIn') || '{}')
     if (loggedIn?.brand) {
-      this.brandSheet = this.users?.find((item: any) => item.brand?.trim() == loggedIn?.brand?.trim())?.brandDatabase
-      if (this.brandSheet) {
-        this.brandService.fetchBrandData(this.brandSheet)
-          .subscribe((res: any) => {            
-            if (res.status === 200) {              
-              this.brandSetting = this.brandService.brandSetting?.global
-              this.getCustomerList()
-            }
-          })
+      if (!this.brandSetting?.global) {
+        this.brandSheet = this.users?.find((item: any) => item.brand?.trim() == loggedIn?.brand?.trim())?.brandDatabase
+        if (this.brandSheet) {
+          this.brandService.fetchBrandData(this.brandSheet)
+            .subscribe((res: any) => {
+              if (res.status === 200) {                
+                this.customers = res.customers
+                this.brandSetting = res.setting
+                loggedIn.trigger = this.loggedInBrand?.trigger
+                localStorage.setItem('loggedIn', JSON.stringify(loggedIn))
+              }
+            })
+        }
+      } else {
+        this.brandSetting = this.brandService.brandSetting
+        this.customers = this.brandService.customerData
       }
     }
   }
 
   onConfirmCreateCustomer() {
     this.googleFormsPath = ''
-    if (this.brandSetting?.customerForms) {
-      if (this.brandSetting?.customerForms?.includes('http')) {
-        this.brandSetting.customerForms = this.brandSetting.customerForms?.split('e/')[1]?.split('/')[0]
+    if (this.brandSetting?.global?.customerForms) {
+      if (this.brandSetting?.global?.customerForms?.includes('http')) {
+        this.brandSetting.global.customerForms = this.brandSetting?.global?.customerForms?.split('e/')[1]?.split('/')[0]
       }
-      this.googleFormsPath = `https://docs.google.com/forms/d/e/${this.brandSetting?.customerForms}/viewform`
+      this.googleFormsPath = `https://docs.google.com/forms/d/e/${this.brandSetting?.global?.customerForms}/viewform`
       Object.keys(this.brandService.brandSetting?.customerDatabase)
         ?.filter((item: any) => item !== 'googleFormsId')
         ?.forEach((k: any, index) => {
           if (this.customer[k]) {
             if (k == 'id') {
-              this.googleFormsPath += `${index === 0 ? '?' : '&'}${this.brandService.brandSetting?.customerDatabase[k]}=${this.brandSetting?.id}-${encodeURIComponent(this.customer[k])}`
+              this.googleFormsPath += `${index === 0 ? '?' : '&'}${this.brandService.brandSetting?.customerDatabase[k]}=${this.brandSetting?.global?.id}-${encodeURIComponent(this.customer[k])}`
             } else {
               this.googleFormsPath += `${index === 0 ? '?' : '&'}${this.brandService.brandSetting?.customerDatabase[k]}=${encodeURIComponent(this.customer[k])}`
             }
           }
         })
-    }
-  }
-
-  getCustomerList() {
-    if (this.brandSetting?.customerDatabase) {
-      try {
-        this.brandService.getCustomerList(this.brandSetting?.customerDatabase)?.subscribe((res: any) => {          
-          if (res.status === 200) {            
-            this.customers = res.data
-          }
-        })
-      } catch (e) {
-        console.error(e);
-      }
     }
   }
 

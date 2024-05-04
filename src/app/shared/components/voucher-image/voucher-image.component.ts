@@ -29,7 +29,7 @@ export class VoucherImageComponent implements OnInit, OnDestroy {
   isPhone: boolean = false
   isShowVoucher: boolean = false
   countDown: any;
-  seconds: any = 5;
+  seconds: any = 0;
 
   constructor(
     private cd: ChangeDetectorRef,

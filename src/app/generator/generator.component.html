@@ -1,7 +1,7 @@
 <div class="p-3">
     @if (loggedIn) {
     <h1 class="text-4xl mb-4">Tạo khuyến mãi</h1>
-    @if (brandSetting?.voucherForms) {
+    @if (brandSetting?.global?.voucherForms) {
     <mat-expansion-panel [expanded]="true">
         <mat-expansion-panel-header>
             <mat-panel-title>Thông tin chung</mat-panel-title>
@@ -11,7 +11,7 @@
             <mat-label>Mã khuyến mãi</mat-label>
             <input type="text" matInput required [(ngModel)]="voucher.id" (keypress)="onPress($event)"
                 (ngModelChange)="voucher.qrData = voucher.id" />
-            <span matTextPrefix>{{brandSetting?.id}}-</span>
+            <span matTextPrefix>{{brandSetting?.global?.id}}-</span>
         </mat-form-field>
         <mat-form-field class="w-full lg:w-1/2">
             <mat-label>Tên gọi khuyến mãi</mat-label>

@@ -9,7 +9,9 @@
     </a>
     <span class="flex-1"></span>
     @if(brandSetting?.logo) {
-    <img [src]="brandSetting?.logo" alt="logo" class="h-10">
+    <a href="/">
+      <img [src]="brandSetting?.logo" alt="logo" class="h-10">
+    </a>
     }
     <span class="flex-1"></span>
     <button mat-icon-button [matMenuTriggerFor]="menu" class="relative">
@@ -34,23 +36,25 @@
         <h1>voucqr</h1>
       </a>
       <mat-list role="list">
-        <mat-list-item role="listitem" class="h-6 p-6" [routerLinkActive]="'!bg-[#F8C861]'" [routerLink]="'/'">Quét
+        <mat-list-item (click)="isToggle ? drawer.close() : ''" role="listitem" class="h-6 p-6"
+          [routerLinkActive]="'!bg-[#F8C861]'" [routerLink]="'/'">Quét
           Khuyến Mãi</mat-list-item>
         @if (loggedIn) {
-        <mat-list-item role="listitem" class="h-6 p-6" [routerLinkActive]="'!bg-[#F8C861]'"
-          [routerLink]="'/khuyen-mai'">Phát Khuyến Mãi</mat-list-item>
+        <mat-list-item (click)="isToggle ? drawer.close() : ''" role="listitem" class="h-6 p-6"
+          [routerLinkActive]="'!bg-[#F8C861]'" [routerLink]="'/khuyen-mai'">Phát Khuyến Mãi</mat-list-item>
         }
         @if (loggedIn) {
-        <mat-list-item role="listitem" class="h-6 p-6" [routerLinkActive]="'!bg-[#F8C861]'" [routerLink]="'/tao'">Tạo
+        <mat-list-item (click)="isToggle ? drawer.close() : ''" role="listitem" class="h-6 p-6"
+          [routerLinkActive]="'!bg-[#F8C861]'" [routerLink]="'/tao'">Tạo
           Khuyến Mãi</mat-list-item>
 
         }
         @if (loggedIn) {
-        <mat-list-item role="listitem" class="h-6 p-6" [routerLinkActive]="'!bg-[#F8C861]'"
-          [routerLink]="'/khach-hang'">Khách hàng</mat-list-item>
+        <mat-list-item (click)="isToggle ? drawer.close() : ''" role="listitem" class="h-6 p-6"
+          [routerLinkActive]="'!bg-[#F8C861]'" [routerLink]="'/khach-hang'">Khách hàng</mat-list-item>
         }
-        <mat-list-item role="listitem" class="h-6 p-6" [routerLinkActive]="'!bg-[#F8C861]'"
-          [routerLink]="'/google-drive-correct-link'">
+        <mat-list-item (click)="isToggle ? drawer.close() : ''" role="listitem" class="h-6 p-6"
+          [routerLinkActive]="'!bg-[#F8C861]'" [routerLink]="'/google-drive-correct-link'">
           Xác định liên kết Google Drive
         </mat-list-item>
       </mat-list>

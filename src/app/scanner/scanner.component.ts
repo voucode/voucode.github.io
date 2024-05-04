@@ -63,18 +63,18 @@ export class ScannerComponent implements OnInit {
   }
 
   updatePath() {
-    if (this.brandSetting.customerVoucherForms && !this.googleFormsPath) {
-      if (this.brandSetting?.customerVoucherForms?.includes('http')) {
-        this.brandSetting.customerVoucherForms = this.brandSetting?.customerVoucherForms?.split('e/')[1]?.split('/')[0]
+    if (this.brandSetting?.global?.customerVoucherForms && !this.googleFormsPath) {
+      if (this.brandSetting?.global?.customerVoucherForms?.includes('http')) {
+        this.brandSetting.global.customerVoucherForms = this.brandSetting?.global?.customerVoucherForms?.split('e/')[1]?.split('/')[0]
       }
       if (
-        this.brandSetting?.customerVoucherForms
+        this.brandSetting?.global?.customerVoucherForms
         && this.brandService.brandSetting?.customerVoucherDatabase?.voucherId
         && this.promotion.voucherId && this.promotion.customerId
         && this.brandService.brandSetting?.customerVoucherDatabase?.customerId
         && this.brandService.brandSetting?.customerVoucherDatabase?.action
       ) {
-        this.googleFormsPath = `https://docs.google.com/forms/d/e/${this.brandSetting?.customerVoucherForms}/viewform?${this.brandService.brandSetting?.customerVoucherDatabase?.voucherId}=${encodeURIComponent(this.promotion.voucherId)}&${this.brandService.brandSetting?.customerVoucherDatabase?.customerId}=${encodeURIComponent(this.promotion.customerId)}&${this.brandService.brandSetting?.customerVoucherDatabase?.action}=log`
+        this.googleFormsPath = `https://docs.google.com/forms/d/e/${this.brandSetting?.global?.customerVoucherForms}/viewform?${this.brandService.brandSetting?.customerVoucherDatabase?.voucherId}=${encodeURIComponent(this.promotion.voucherId)}&${this.brandService.brandSetting?.customerVoucherDatabase?.customerId}=${encodeURIComponent(this.promotion.customerId)}&${this.brandService.brandSetting?.customerVoucherDatabase?.action}=log`
       }
     }
   }
@@ -117,59 +117,30 @@ export class ScannerComponent implements OnInit {
   getCurrentBrand() {
     let loggedIn = JSON.parse(localStorage.getItem('loggedIn') || '{}')
     if (loggedIn?.brand) {
-      this.brandSheet = this.users?.find((item: any) => item.brand?.trim() == loggedIn?.brand?.trim())?.brandDatabase
-      if (this.brandSheet) {
-        this.brandService.fetchBrandData(this.brandSheet)
-          .subscribe((res: any) => {
-            if (res.status === 200) {
-              this.brandSetting = this.brandService.brandSetting?.global
-              this.getCustomerList()
-              loggedIn.trigger = this.loggedInBrand?.trigger
-              localStorage.setItem('loggedIn', JSON.stringify(loggedIn))
-            }
-          })
-      }
-    }
-  }
-
-  getCustomerVoucherList() {
-    this.brandService.getCustomerVoucherList(this.brandSetting?.customerVoucherDatabase)?.subscribe((res: any) => {
-      if (res.status === 200) {
-        this.customerVouchers = res?.data
-        this.loading = false        
+      if (!this.brandSetting?.global) {
+        this.brandSheet = this.users?.find((item: any) => item.brand?.trim() == loggedIn?.brand?.trim())?.brandDatabase
+        if (this.brandSheet) {
+          this.brandService.fetchBrandData(this.brandSheet)
+            .subscribe((res: any) => {
+              if (res.status === 200) {
+                this.loading = false
+                this.customerVouchers = res.customerVouchers
+                this.customers = res.customers
+                this.vouchers = res.vouchers
+                this.brandSetting = res.setting
+                this.updateData()
+                loggedIn.trigger = this.loggedInBrand?.trigger
+                localStorage.setItem('loggedIn', JSON.stringify(loggedIn))
+              }
+            })
+        }
+      } else {
+        this.loading = false
+        this.brandSetting = this.brandService.brandSetting
+        this.customerVouchers = this.brandService.customerVoucherData
+        this.customers = this.brandService.customerData
+        this.vouchers = this.brandService.voucherData
         this.updateData()
-      }
-    })
-  }
-
-  getCustomerList() {
-    if (this.brandSetting?.customerDatabase) {
-      try {
-        this.brandService.getCustomerList(this.brandSetting?.customerDatabase)?.subscribe((res: any) => {
-          if (res.status === 200) {
-            this.customers = res.data
-            this.getVoucherList()
-            this.updateData()
-          }
-        })
-      } catch (e) {
-        console.error(e);
-      }
-    }
-  }
-
-  getVoucherList() {
-    if (this.brandSetting?.voucherDatabase) {
-      try {
-        this.brandService.getVoucherList(this.brandSetting?.voucherDatabase)?.subscribe((res: any) => {
-          if (res.status === 200) {
-            this.vouchers = res.data
-            this.getCustomerVoucherList()
-            this.updateData()
-          }
-        })
-      } catch (e) {
-        console.error(e);
       }
     }
   }
@@ -200,9 +171,10 @@ export class ScannerComponent implements OnInit {
     if (this.promotion.voucherId && this.promotion.customerId) {
       const foundCustomer = this.customers?.find((item: any) => item?.id == this.promotion?.customerId)
       if (foundCustomer) {
-        this.promotion.customer =3
-      }      
+        this.promotion.customer = foundCustomer
+      }
       this.promotion.foundData = this.customerVouchers?.filter((item: any) => item?.voucherId?.trim() == this.promotion?.voucherId?.trim() && item?.customerId?.trim() == this.promotion?.customerId?.trim())
+      this.cd.detectChanges()
       const foundVoucher = this.vouchers?.find((item: any) => item?.id == this.promotion?.voucherId)
       if (foundVoucher) {
         this.promotion.voucher = foundVoucher;
@@ -213,14 +185,14 @@ export class ScannerComponent implements OnInit {
           if (this.promotion.voucher?.ticks && typeof this.promotion.voucher?.ticks == 'string') {
             const parsedData = JSON.parse(this.promotion.voucher.ticks)
             this.promotion.voucher.rawTicks = parsedData
-            this.promotion.voucher.ticks = <any>[]
+          }
+          this.promotion.voucher.ticks = <any>[]
+          this.cd.detectChanges()
+          if (this.promotion?.foundData?.length > 0) {
             this.cd.detectChanges()
-            if (this.promotion?.foundData?.length > 0) {
+            for (let i = 0; i < this.promotion?.foundData?.length - 1; i++) {
               this.cd.detectChanges()
-              for (let i = 0; i < this.promotion?.foundData?.length - 1; i++) {
-                this.cd.detectChanges()
-                this.promotion.voucher.ticks.push(parsedData[i])
-              }
+              this.promotion.voucher.ticks.push(this.promotion.voucher.rawTicks[i])
             }
           }
           if (this.promotion.voucher.qrPosition) {
@@ -235,8 +207,6 @@ export class ScannerComponent implements OnInit {
         }
       }
       this.cd.detectChanges()
-      console.log(this.promotion);
-
     }
   }
 

@@ -52,7 +52,7 @@ export class GeneratorComponent implements OnInit {
 
   ngOnInit(): void {
     this.updateQrPosition()
-    if (!this.brandSetting?.voucherForms) {
+    if (!this.brandSetting?.global?.voucherForms) {
       this.fetchInitData()
     }
   }
@@ -92,14 +92,20 @@ export class GeneratorComponent implements OnInit {
   getCurrentBrand() {
     let loggedIn = JSON.parse(localStorage.getItem('loggedIn') || '{}')
     if (loggedIn?.brand) {
-      this.brandSheet = this.users?.find((item: any) => item.brand?.trim() == loggedIn?.brand?.trim())?.brandDatabase
-      if (this.brandSheet) {
-        this.brandService.fetchBrandData(this.brandSheet)
-          .subscribe((res: any) => {
-            if (res.status === 200) {              
-              this.brandSetting = this.brandService.brandSetting?.global
-            }
-          })
+      if (!this.brandSetting?.global) {
+        this.brandSheet = this.users?.find((item: any) => item.brand?.trim() == loggedIn?.brand?.trim())?.brandDatabase
+        if (this.brandSheet) {
+          this.brandService.fetchBrandData(this.brandSheet)
+            .subscribe((res: any) => {
+              if (res.status === 200) {
+                this.brandSetting = res.setting
+                loggedIn.trigger = this.loggedInBrand?.trigger
+                localStorage.setItem('loggedIn', JSON.stringify(loggedIn))
+              }
+            })
+        }
+      } else {
+        this.brandSetting = this.brandService.brandSetting
       }
     }
   }
@@ -190,18 +196,18 @@ export class GeneratorComponent implements OnInit {
   }
 
   saveData() {
-    if (this.brandSetting?.voucherForms) {
-      if (this.brandSetting?.voucherForms?.includes('http')) {
-        this.brandSetting.voucherForms = this.brandSetting?.voucherForms?.split('e/')[1]?.split('/')[0]
+    if (this.brandSetting?.global?.voucherForms) {
+      if (this.brandSetting?.global?.voucherForms?.includes('http')) {
+        this.brandSetting.global.voucherForms = this.brandSetting?.global?.voucherForms?.split('e/')[1]?.split('/')[0]
       }
-      this.googleFormsPath = `https://docs.google.com/forms/d/e/${this.brandSetting?.voucherForms}/viewform`
+      this.googleFormsPath = `https://docs.google.com/forms/d/e/${this.brandSetting?.global?.voucherForms}/viewform`
 
       Object.keys(this.brandService.brandSetting?.voucherDatabase)
         ?.filter((item: any) => item !== 'googleFormsId')
         ?.forEach((k: any, index) => {
           if (k == 'id') {
             if (this.voucher[k]) {
-              this.googleFormsPath += `${index === 0 ? '?' : '&'}${this.brandService.brandSetting?.voucherDatabase[k]}=${this.brandSetting?.id}-${encodeURIComponent(this.voucher[k])}`
+              this.googleFormsPath += `${index === 0 ? '?' : '&'}${this.brandService.brandSetting?.voucherDatabase[k]}=${this.brandSetting?.global?.id}-${encodeURIComponent(this.voucher[k])}`
             }
           } else {
             if (k == 'ticks') {
