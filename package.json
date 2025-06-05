@@ -8,7 +8,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "start-pwa": "ng deploy --dry-run --base-href=/ && cd dist/voucqr/browser && copy index.html 404.html && http-server -p 8080 -c-1",
-    "firebase-deploy": "cd dist/voucqr/browser && copy index.html 404.html && firebase deploy && cd .. && cd .. && cd .. && git add . && git commit -m deploy && git push"
+    "firebase-deploy": "ng deploy --dry-run --base-href=/ && cd dist/voucqr/browser && copy index.html 404.html && firebase deploy && cd .. && cd .. && cd .. && git add . && git commit -m deploy && git push"
   },
   "private": true,
   "dependencies": {

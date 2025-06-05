@@ -5,7 +5,8 @@
         <h1 class="text-center text-2xl">PHÁT KHUYẾN MÃI</h1>
         <mat-form-field class="w-full">
             <mat-label>Chọn chương trình</mat-label>
-            <mat-select required [(ngModel)]="voucher.voucher" (ngModelChange)="updateValue()">
+            <mat-select required [(ngModel)]="voucher.voucher"
+                (ngModelChange)="updateValue()">
                 @for(item of vouchers; track item) {
                 <mat-option [value]="item">{{item?.name}}</mat-option>
                 }
@@ -16,7 +17,8 @@
         }
         <mat-form-field class="w-full">
             <mat-label>Chọn khách hàng</mat-label>
-            <mat-select required [(ngModel)]="voucher.customerId" (ngModelChange)="updateValue()">
+            <mat-select required [(ngModel)]="voucher.customerId"
+                (ngModelChange)="updateValue()">
                 @for(item of customers; track item) {
                 <mat-option [value]="item?.id">{{item?.name}}</mat-option>
                 }
@@ -26,19 +28,26 @@
         <mat-progress-bar mode="indeterminate"></mat-progress-bar>
         }
         <div class="text-center">
-            <button mat-flat-button [color]="'primary'" (click)="onConfirmCreateVoucher()">XÁC NHẬN</button>
+            <button mat-flat-button [color]="'primary'"
+                (click)="onConfirmCreateVoucher()">XÁC NHẬN</button>
         </div>
         @if (googleFormsPath) {
-        <button class="w-full" mat-stroked-button [color]="'primary'" (click)="googleFormsPath = ''">Đóng biểu
+        <button class="w-full" mat-stroked-button [color]="'primary'"
+            (click)="googleFormsPath = ''">Đóng biểu
             mẫu</button>
-        <div><strong class="text-[red]">LƯU Ý:</strong> Hãy Ấn nút "Gửi" hoặc "Submit" trong Biễu Mẫu bên dưới 👇👇👇
+        <div><strong class="text-[red]">LƯU Ý:</strong> Hãy Ấn nút "Gửi" hoặc
+            "Submit" trong Biễu Mẫu bên dưới 👇👇👇
             thì bạn mới hoàn thành việc đăng ký nhé!</div>
-        <div><strong class="text-[red]">LƯU Ý:</strong> Mỗi khi hoàn thành việc tạo bạn nhớ ấn nút "Đóng biểu mẫu để làm
+        <div><strong class="text-[red]">LƯU Ý:</strong> Mỗi khi hoàn thành việc
+            tạo bạn nhớ ấn nút "Đóng biểu mẫu để làm
             mới nhé!"</div>
-        <iframe [src]="googleFormsPath | safe" class="w-full min-h-96" frameborder="0"></iframe>
-        <div><strong class="text-[red]">LƯU Ý:</strong> Hãy Ấn nút "Gửi" hoặc "Submit" trong Biễu Mẫu bên trên 👆👆👆
+        <iframe [src]="googleFormsPath | safe" class="w-full min-h-96"
+            frameborder="0"></iframe>
+        <div><strong class="text-[red]">LƯU Ý:</strong> Hãy Ấn nút "Gửi" hoặc
+            "Submit" trong Biễu Mẫu bên trên 👆👆👆
             thì bạn mới hoàn thành việc đăng ký nhé!</div>
-        <div><strong class="text-[red]">LƯU Ý:</strong> Mỗi khi hoàn thành việc tạo bạn nhớ ấn nút "Đóng biểu mẫu để làm
+        <div><strong class="text-[red]">LƯU Ý:</strong> Mỗi khi hoàn thành việc
+            tạo bạn nhớ ấn nút "Đóng biểu mẫu để làm
             mới nhé!"</div>
         }
         @if(customerVouchers?.length > 0) {
@@ -56,11 +65,16 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @for(item of customerVouchers | searchCustomerVoucherByKeyWord: search['value']; track item) {
-                        <tr (click)="voucher.voucher = item?.voucher; voucher.customerId = item?.customer?.id; updateValue()"
+                        @for(item of customerVouchers |
+                        searchCustomerVoucherByKeyWord: search['value']; track
+                        item) {
+                        <tr
+                            (click)="voucher.voucher = item?.voucher; voucher.customerId = item?.customer?.id; updateValue()"
                             class="cursor-pointer">
-                            <td class="p-3 border-b">{{item?.voucher?.name}}</td>
-                            <td class="p-3 border-b">{{item?.customer?.name}}</td>
+                            <td
+                                class="p-3 border-b">{{item?.voucher?.name}}</td>
+                            <td
+                                class="p-3 border-b">{{item?.customer?.name}}</td>
                         </tr>
                         }
                     </tbody>
@@ -70,7 +84,9 @@
         }
     </div>
     @if(voucher.customerId && voucher.voucherId) {
-    <app-voucher-image class="w-full lg:w-1/2" [voucher]="voucher?.voucher" [readonly]="true"></app-voucher-image>
+    <app-voucher-image
+        class="w-full lg:w-1/2 sticky top-0 block overflow-hidden h-fit"
+        [voucher]="voucher?.voucher" [readonly]="true"></app-voucher-image>
     }
     } @else {
     <div class="flex flex-col items-center justify-center">
